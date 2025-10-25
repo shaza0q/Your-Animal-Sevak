@@ -12,7 +12,7 @@ function protect(req, res, next){
         const payload = jwt.verify(token, process.env.JWT_SECRET)
 
         req.user = payload
-        console.log("15 from middleware auth", payload)
+        // console.log("15 from middleware auth", payload)
 
         next()
     }

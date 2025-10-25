@@ -29,7 +29,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/addFarm" element={<AddFarm/>} />
           <Route path="/addAnimal" element={<AddAnimal/>} />
-          <Route path="/farmInsights" element={<FarmInsights/>} />
+          <Route path="/farmInsights/:id" element={<FarmInsights/>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
