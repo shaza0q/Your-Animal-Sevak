@@ -7,13 +7,13 @@ const healthSchema = new mongoose.Schema({
     enum: ["Up to date", "Due", "Not started"], 
     default: "Not started" 
   },
-  lastVetCheckupDate: { type: Date },
+  lastVetCheckupDate: { type: [Date] },
   healthNotes: { type: String },
   pregnancyStatus: { type: String, enum: ["Yes", "No", "N/A"], default: "N/A" },
   numberOfOffspring: { type: Number, default: 0 },
   feedType: { type: String },
   wateringSchedule: { type: String },
-  vaccinationCertificate: { type: String }, // File URL (PDF or image)
+  vaccinationCertificate: { type: [String] }, // File URL (PDF or image)
 }, { timestamps: true });
 
 module.exports = mongoose.model("Health", healthSchema);

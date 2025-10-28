@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
+import { cloudinaryUpload } from "@/api/cloudinary"
+import { getUserFarm } from "@/api/getUserFarms"
+import imageCompression from 'browser-image-compression'
 import { 
   Beef, 
   Heart, 
@@ -18,9 +21,15 @@ import {
 
 const AddAnimal = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const preselectedFarmId = location.state?.farmId || "";
+
+  const [farmData, setFarmData] = useState<[] | null>()
   const [formData, setFormData] = useState({
     // Basic Information
     animalId: "",
+    farmId: "",
     animalType: "",
     breed: "",
     gender: "",
@@ -47,18 +56,36 @@ const AddAnimal = () => {
     meatYield: "",
     purpose: "",
     
-    // Media
-    animalPhoto: null as File | null,
-    healthDocument: null as File | null,
   });
+
+  const [animalPhoto, setAnimalPhoto] = useState('')
+  const [vaccinePhoto, setVaccinePhoto] = useState('')
+
+  useEffect(() => {
+    const getFarms = async() => {
+      try{
+        const response = await getUserFarm();
+    
+        setFarmData(response);
+
+        if (preselectedFarmId && response.some((f: any) => f._id === preselectedFarmId)) {
+          setFormData(prev => ({ ...prev, farmId: preselectedFarmId }));
+        }
+  
+      }
+      catch(err){
+        console.log("Error in getting farm Data in the addAnimal Page")
+      }
+    }
+
+    getFarms()
+
+  }, [navigate])
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleFileChange = (field: string, file: File | null) => {
-    setFormData(prev => ({ ...prev, [field]: file }));
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +101,9 @@ const AddAnimal = () => {
     }
 
     console.log("Form Data Submitted:", formData);
-    
+    console.log("animal photo: ", animalPhoto);
+    console.log("animal photo: ", vaccinePhoto);
+
     toast({
       title: "Animal Added Successfully!",
       description: `${formData.breed} has been added to the system.`,
@@ -129,6 +158,30 @@ const AddAnimal = () => {
                     value={formData.animalId}
                     onChange={(e) => handleInputChange("animalId", e.target.value)}
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="animalType">Farm Name *</Label>
+                  <Select
+                    value={formData.farmId}
+                    onValueChange={(value) => handleInputChange("farmId", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Farm Name" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {farmData && farmData.length > 0 ? (
+                        farmData.map((f: any, index: number) => (
+                          <SelectItem key={f._id} value={f._id}>
+                            {f.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="NA">No farm is listed</SelectItem>
+
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
@@ -439,13 +492,10 @@ const AddAnimal = () => {
                     id="animalPhoto"
                     type="file"
                     accept="image/*"
-                    onChange={(e) => handleFileChange("animalPhoto", e.target.files?.[0] || null)}
+                    onChange={async(e) => {
+                      const res = await cloudinaryUpload(e.target.files[0], setAnimalPhoto)
+                    }}
                   />
-                  {formData.animalPhoto && (
-                    <p className="text-sm text-muted-foreground">
-                      Selected: {formData.animalPhoto.name}
-                    </p>
-                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -454,13 +504,10 @@ const AddAnimal = () => {
                     id="healthDocument"
                     type="file"
                     accept=".pdf,.doc,.docx,image/*"
-                    onChange={(e) => handleFileChange("healthDocument", e.target.files?.[0] || null)}
+                    onChange={async(e) => {
+                      const res = await cloudinaryUpload(e.target.files[0], setVaccinePhoto)
+                    }}
                   />
-                  {formData.healthDocument && (
-                    <p className="text-sm text-muted-foreground">
-                      Selected: {formData.healthDocument.name}
-                    </p>
-                  )}
                 </div>
               </CardContent>
             </Card>

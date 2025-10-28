@@ -26,7 +26,8 @@ import {
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from "recharts";
 
 const FarmInsights = () => {
-  const id = useParams()
+  const farm = useParams()
+  // console.log(farm)
   const navigate = useNavigate();
   // const [farmData, setFarmData] = useState()
   // Mock data - in real app, this would come from API
@@ -476,7 +477,7 @@ const FarmInsights = () => {
             </CardHeader>
 
             <CardContent className="grid grid-cols-2 gap-3">
-              <Button className="h-auto flex-col gap-2 py-6" variant="default" onClick = { () => navigate("/addAnimal")}>
+              <Button className="h-auto flex-col gap-2 py-6" variant="default" onClick = { () => navigate("/addAnimal", { state: { farmId: farm.id } })}>
                 <Plus className="h-6 w-6" />
                 <span>Add Animal</span>
               </Button>
