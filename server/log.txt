@@ -1366,3 +1366,95 @@
 1761744148319 : POST : /user/getUserData
 
 1761744148345 : GET : /asset/getFarm
+
+1761761820808 : POST : /user/getUserData
+
+1761761820840 : GET : /asset/getFarm
+
+1761761840596 : POST : /user/getUserData
+
+1761761845866 : POST : /user/getUserData
+
+1761761850580 : GET : /asset/getFarm
+
+1761764223125 : POST : /auth/signin
+
+1761764223275 : POST : /user/getUserData
+
+1761764223287 : GET : /asset/getFarm
+
+1761764229884 : GET : /asset/getFarm
+
+1761764274879 : POST : /animal/addAnimal
+
+1761764283296 : POST : /animal/addAnimal
+
+1761764297824 : GET : /animal/addAnimal
+
+1761764370140 : GET : /asset/getFarm
+
+1761764410133 : POST : /animal/addAnimal
+
+1761764966501 : GET : /asset/getFarm
+
+1761765263708 : POST : /user/getUserData
+
+1761765263729 : GET : /asset/getFarm
+
+1761765267348 : GET : /asset/getFarm
+
+1761765306945 : POST : /animal/addAnimal
+
+1761765387715 : GET : /asset/getFarm
+
+1761765412071 : POST : /animal/addAnimal
+
+1761765459235 : GET : /asset/getFarm
+
+1761765486278 : POST : /animal/addAnimal
+
+1761765519347 : GET : /asset/getFarm
+
+1761765542146 : POST : /animal/addAnimal
+
+1761765578572 : GET : /asset/getFarm
+
+1761765794850 : POST : /animal/addAnimal
+
+1761765795913 : POST : /user/getUserData
+
+1761765795925 : GET : /asset/getFarm
+
+1761766109935 : GET : /asset/getFarm
+
+1761766142337 : POST : /animal/addAnimal
+
+1761766143381 : POST : /user/getUserData
+
+1761766143393 : GET : /asset/getFarm
+
+1761766241285 : GET : /asset/getFarm
+
+1761766329993 : POST : /animal/addAnimal
+
+1761766584501 : GET : /asset/getFarm
+
+1761766588492 : GET : /asset/getFarm
+
+1761766594134 : GET : /asset/getFarm
+
+1761766612381 : POST : /animal/addAnimal
+
+1761766647004 : POST : /animal/addAnimal
+
+1761766648043 : POST : /user/getUserData
+
+1761766648053 : GET : /asset/getFarm
+
+1761766650309 : GET : /asset/getFarm
+
+1761766694888 : POST : /animal/addAnimal
+
+1761766695924 : POST : /user/getUserData
+
+1761766695933 : GET : /asset/getFarm

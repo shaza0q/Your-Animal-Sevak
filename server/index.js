@@ -27,6 +27,6 @@ app.use(logReqRes('log.txt'))
 app.use("/auth", authRouter)
 app.use("/user", userRouter)
 app.use("/asset", assetRouter)
-app.use("animal", animalRouter)
+app.use("/animal", animalRouter)
 
 app.listen(PORT, () => console.log("Server is running"))

@@ -14,7 +14,7 @@ const animalSchema = new mongoose.Schema({
     ref: 'Farm' 
   },
 
-  type: { 
+  animalType: { 
     type: String, 
     enum: [
     "Cow",
@@ -44,15 +44,13 @@ const animalSchema = new mongoose.Schema({
     required: true 
   },
 
-  motherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Animal' },
+  motherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Animal', default: undefined },
   
-  fatherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Animal' },
+  fatherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Animal', default: undefined },
 
   generation: { type: Number, default: 1 },
 
   weight: { type: Number },
-
-  colorMarkings: { type: String },
 
   dateOfBirth: { type: Date },
 
@@ -64,8 +62,6 @@ const animalSchema = new mongoose.Schema({
     enum: ['Active', 'Sold', 'Deceased'],
     default: 'Active',
   },
-  
-  location: { type: String },
 
 
 }, { timestamps: true });

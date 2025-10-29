@@ -28,7 +28,7 @@ const AddAnimal = () => {
   
   const [formData, setFormData] = useState({
     farmId: "",
-    animalId: "",
+    tagNumber: "",
     name: "",
     animalType: "",
     motherId: "",
@@ -36,9 +36,7 @@ const AddAnimal = () => {
     otherAnimalType: "",
     breed: "",
     gender: "",
-    generation: "",
     weight: "",
-    notes: "",
     dateOfBirth: "",
     acquisitionDate: "",
   });
@@ -94,14 +92,16 @@ const AddAnimal = () => {
       // Navigate back to dashboard after submission
       setTimeout(() => navigate("/dashboard"), 1000);
     }
-    catch(err){
+    catch (err: any) {
+      console.error("Error while registering animal:", err);
+
       toast({
-        title: "Not able to add Animal Data",
-        description: err,
+        title: "Failed to Add Animal Data",
+        description: err?.message || "An unexpected error occurred while adding the animal.",
         variant: "destructive",
       });
-      return;
     }
+
     
   };
 
@@ -167,8 +167,8 @@ const AddAnimal = () => {
                   <Label>Animal ID / Tag</Label>
                   <Input
                     placeholder="e.g., A-001"
-                    value={formData.animalId}
-                    onChange={(e) => handleInputChange("animalId", e.target.value)}
+                    value={formData.tagNumber}
+                    onChange={(e) => handleInputChange("tagNumber", e.target.value)}
                   />
                 </div>
 
