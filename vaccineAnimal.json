@@ -1,0 +1,160 @@
+[
+  {
+    "animalType": "Cow",
+    "vaccines": [
+      "Foot and Mouth Disease (FMD) Vaccine",
+      "Haemorrhagic Septicaemia (HS) Vaccine",
+      "Black Quarter (BQ) Vaccine",
+      "Brucellosis (S19) Vaccine",
+      "Theileriosis Vaccine",
+      "Anthrax Spore Vaccine",
+      "Rabies Vaccine (for exposed cows)",
+      "Lumpy Skin Disease (LSD) Vaccine",
+      "Leptospirosis Vaccine"
+    ]
+  },
+  {
+    "animalType": "Buffalo",
+    "vaccines": [
+      "FMD Vaccine",
+      "HS Vaccine",
+      "BQ Vaccine",
+      "Brucellosis Vaccine",
+      "Anthrax Vaccine",
+      "LSD Vaccine",
+      "Theileriosis Vaccine",
+      "Leptospirosis Vaccine"
+    ]
+  },
+  {
+    "animalType": "Goat",
+    "vaccines": [
+      "Peste des Petits Ruminants (PPR) Vaccine",
+      "Enterotoxaemia Vaccine",
+      "Goat Pox Vaccine",
+      "Foot and Mouth Disease (FMD) Vaccine",
+      "Anthrax Vaccine",
+      "Sheep & Goat Pox Combined Vaccine",
+      "Brucellosis (Rev.1) Vaccine",
+      "CCPP (Contagious Caprine Pleuropneumonia) Vaccine"
+    ]
+  },
+  {
+    "animalType": "Sheep",
+    "vaccines": [
+      "PPR Vaccine",
+      "Enterotoxaemia Vaccine",
+      "Sheep Pox Vaccine",
+      "FMD Vaccine",
+      "Anthrax Vaccine",
+      "Brucellosis Vaccine",
+      "Bluetongue Vaccine",
+      "Clostridium Vaccine"
+    ]
+  },
+  {
+    "animalType": "Chicken",
+    "vaccines": [
+      "Newcastle Disease (ND) Vaccine (Lasota/BD1)",
+      "Infectious Bursal Disease (IBD) Vaccine",
+      "Fowl Pox Vaccine",
+      "Marek’s Disease Vaccine",
+      "Infectious Bronchitis Vaccine",
+      "Avian Encephalomyelitis Vaccine",
+      "Coryza Vaccine",
+      "Egg Drop Syndrome (EDS) Vaccine",
+      "Salmonella Vaccine"
+    ]
+  },
+  {
+    "animalType": "Duck",
+    "vaccines": [
+      "Duck Plague (DP) Vaccine",
+      "Duck Cholera Vaccine",
+      "Newcastle Disease Vaccine",
+      "Duck Hepatitis Vaccine",
+      "Riemerella Anatipestifer Vaccine"
+    ]
+  },
+  {
+    "animalType": "Rabbit",
+    "vaccines": [
+      "Myxomatosis Vaccine",
+      "Rabbit Hemorrhagic Disease (RHDV) Vaccine",
+      "Pasteurellosis Vaccine",
+      "Encephalitozoon cuniculi Vaccine"
+    ]
+  },
+  {
+    "animalType": "Dog",
+    "vaccines": [
+      "Rabies Vaccine",
+      "DHPP (Distemper, Hepatitis, Parvo, Parainfluenza) Vaccine",
+      "Leptospirosis Vaccine",
+      "Kennel Cough (Bordetella) Vaccine",
+      "Coronavirus Vaccine",
+      "Lyme Disease Vaccine"
+    ]
+  },
+  {
+    "animalType": "Cat",
+    "vaccines": [
+      "Rabies Vaccine",
+      "FVRCP (Feline Viral Rhinotracheitis, Calicivirus, Panleukopenia) Vaccine",
+      "Feline Leukemia Virus (FeLV) Vaccine",
+      "Chlamydia Vaccine",
+      "Feline Bordetella Vaccine"
+    ]
+  },
+  {
+    "animalType": "Camel",
+    "vaccines": [
+      "Haemorrhagic Septicaemia Vaccine",
+      "FMD Vaccine",
+      "Camel Pox Vaccine",
+      "Anthrax Vaccine",
+      "Trypanosomiasis Vaccine (experimental)",
+      "Brucellosis Vaccine"
+    ]
+  },
+  {
+    "animalType": "Donkey",
+    "vaccines": [
+      "Tetanus Toxoid Vaccine",
+      "Equine Influenza Vaccine",
+      "FMD Vaccine",
+      "Equine Encephalomyelitis Vaccine",
+      "Rabies Vaccine"
+    ]
+  },
+  {
+    "animalType": "Horse",
+    "vaccines": [
+      "Tetanus Toxoid Vaccine",
+      "Equine Influenza Vaccine",
+      "Japanese Encephalitis Vaccine",
+      "Rabies Vaccine",
+      "Equine Herpes Virus Vaccine",
+      "Strangles Vaccine",
+      "West Nile Virus Vaccine"
+    ]
+  },
+  {
+    "animalType": "Pigeon",
+    "vaccines": [
+      "Paramyxovirus (PMV1) Vaccine",
+      "Pigeon Pox Vaccine",
+      "Salmonella Vaccine",
+      "E. coli Vaccine"
+    ]
+  },
+  {
+    "animalType": "Turkey",
+    "vaccines": [
+      "Fowl Pox Vaccine",
+      "Newcastle Disease Vaccine",
+      "Hemorrhagic Enteritis Vaccine",
+      "Avian Encephalomyelitis Vaccine"
+    ]
+  }
+]

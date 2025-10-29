@@ -1,17 +1,35 @@
 const mongoose = require("mongoose");
 
 const salesSchema = new mongoose.Schema({
-  animal: { type: mongoose.Schema.Types.ObjectId, ref: "Animal", required: true },
-  estimatedPrice: { type: Number },
-  forSale: { type: Boolean, default: false },
-  dateListed: { type: Date },
-  buyerInfo: { type: String },
-  meatYield: { type: Number },
-  purpose: { 
-    type: String, 
-    enum: ["Breeding", "Milk", "Meat", "Sale"], 
-    default: "Sale" 
+  animalId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "Animal", 
+    required: true 
+  },
+
+  price: { type: Number },
+
+  dateSold: { type: Date },
+
+  buyerName: { type: String, required: true },
+
+  buyerContactInfo: { type: Number, required: true  },
+
+  buyerAddress: { type: String },
+
+  buyerEmail: { type: String },
+
+  handledBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'newUser'
   }
+
 }, { timestamps: true });
+
+
+salesSchema.index({
+  date: -1,
+  animalId: 1
+})
 
 module.exports = mongoose.model("Sales", salesSchema);

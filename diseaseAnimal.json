@@ -1,0 +1,58 @@
+[
+  {
+    "animalType": "Cow",
+    "diseaseName": ["Foot and Mouth Disease", "Black Quarter", "Brucellosis", "Mastitis", "Lumpy Skin Disease"]
+  },
+  {
+    "animalType": "Buffalo",
+    "diseaseName": ["Hemorrhagic Septicemia", "Brucellosis", "Foot and Mouth Disease", "Theileriosis", "Lumpy Skin Disease"]
+  },
+  {
+    "animalType": "Goat",
+    "diseaseName": ["Peste des Petits Ruminants", "Enterotoxemia", "Foot and Mouth Disease", "Brucellosis", "Orf"]
+  },
+  {
+    "animalType": "Sheep",
+    "diseaseName": ["Sheep Pox", "Foot Rot", "Enterotoxemia", "Peste des Petits Ruminants", "Bluetongue"]
+  },
+  {
+    "animalType": "Chicken",
+    "diseaseName": ["Newcastle Disease", "Infectious Bursal Disease", "Fowl Pox", "Marek’s Disease", "Avian Influenza"]
+  },
+  {
+    "animalType": "Duck",
+    "diseaseName": ["Duck Plague", "Duck Viral Hepatitis", "Botulism", "Avian Cholera", "Aspergillosis"]
+  },
+  {
+    "animalType": "Rabbit",
+    "diseaseName": ["Myxomatosis", "Rabbit Hemorrhagic Disease", "Pasteurellosis", "Coccidiosis", "Ear Mite Infestation"]
+  },
+  {
+    "animalType": "Dog",
+    "diseaseName": ["Rabies", "Canine Distemper", "Parvovirus", "Leptospirosis", "Kennel Cough"]
+  },
+  {
+    "animalType": "Cat",
+    "diseaseName": ["Feline Panleukopenia", "Feline Leukemia Virus", "Rabies", "Feline Calicivirus", "Feline Herpesvirus"]
+  },
+  {
+    "animalType": "Camel",
+    "diseaseName": ["Trypanosomiasis", "Camel Pox", "Foot and Mouth Disease", "Brucellosis", "Respiratory Infection"]
+  },
+  {
+    "animalType": "Donkey",
+    "diseaseName": ["Tetanus", "Glanders", "Colic", "Strangles", "Equine Influenza"]
+  },
+  {
+    "animalType": "Horse",
+    "diseaseName": ["Equine Influenza", "Tetanus", "Strangles", "Glanders", "Equine Encephalomyelitis"]
+  },
+  {
+    "animalType": "Pigeon",
+    "diseaseName": ["Paramyxovirus", "Canker", "Pigeon Pox", "E. coli Infection", "Salmonellosis"]
+  },
+  {
+    "animalType": "Turkey",
+    "diseaseName": ["Fowl Cholera", "Turkey Coryza", "Avian Influenza", "Blackhead Disease", "E. coli Infection"]
+  }
+]

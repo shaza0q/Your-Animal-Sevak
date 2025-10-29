@@ -1,0 +1,694 @@
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar, Upload, X } from "lucide-react";
+import { toast } from "sonner";
+
+const STATUS_OPTIONS = [
+  { value: "Healthy", label: "🟢 Healthy" },
+  { value: "Injured", label: "🟠 Injured" },
+  { value: "Diseased", label: "🔴 Diseased" },
+  { value: "Pregnant", label: "🟣 Pregnant" },
+  { value: "Vaccined", label: "🔵 Vaccined" },
+  { value: "Sold", label: "⚫ Sold" },
+];
+
+const DISEASE_OPTIONS = [
+  "Foot and Mouth Disease",
+  "Mastitis",
+  "Brucellosis",
+  "Anthrax",
+  "Other",
+];
+
+const VACCINE_OPTIONS = [
+  "FMD Vaccine",
+  "Brucella Vaccine",
+  "HS Vaccine",
+  "Bovine Pox Vaccine",
+  "Other",
+];
+
+const FEED_OPTIONS = [
+  "Green Fodder",
+  "Dry Fodder",
+  "Mixed Feed",
+  "Mineral Mix",
+  "Other",
+];
+
+const MALE_ANIMALS = [
+  { id: "21", name: "Animal #21 - Bull" },
+  { id: "42", name: "Animal #42 - Bull" },
+  { id: "73", name: "Animal #73 - Bull" },
+];
+
+const RISK_LEVELS = ["Low", "Moderate", "High"];
+
+const AnimalUpdate = () => {
+  const today = new Date().toISOString().split("T")[0];
+  
+  const [formData, setFormData] = useState({
+    date: today,
+    animalId: "",
+    weight: "",
+    notes: "",
+    status: "",
+    mediaFile: null as File | null,
+    
+    // Injured fields
+    riskLevel: "",
+    
+    // Diseased fields
+    diseaseName: "",
+    customDiseaseName: "",
+    
+    // Pregnant fields
+    maleAnimalId: "",
+    expectedDeliveryDate: "",
+    
+    // Vaccined fields
+    vaccineName: "",
+    customVaccineName: "",
+    nextVaccineDate: "",
+    
+    // FeedUpdate fields
+    feedType: "",
+    customFeedType: "",
+    
+    // Sold fields
+    price: "",
+    buyerName: "",
+    buyerEmail: "",
+    buyerContact: "",
+    buyerAddress: "",
+  });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData(prev => ({ ...prev, mediaFile: file }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setMediaPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeMedia = () => {
+    setFormData(prev => ({ ...prev, mediaFile: null }));
+    setMediaPreview(null);
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.status) {
+      newErrors.status = "Status is required";
+    }
+
+    // Status-specific validation
+    if (formData.status === "Injured" && !formData.notes) {
+      newErrors.notes = "Notes are required for injured status";
+    }
+
+    if (formData.status === "Diseased" && !formData.diseaseName) {
+      newErrors.diseaseName = "Disease name is required";
+    }
+
+    if (formData.status === "Diseased" && formData.diseaseName === "Other" && !formData.customDiseaseName) {
+      newErrors.customDiseaseName = "Please specify the disease name";
+    }
+
+    if (formData.status === "Pregnant" && !formData.maleAnimalId) {
+      newErrors.maleAnimalId = "Male animal ID is required";
+    }
+
+    if (formData.status === "Pregnant" && !formData.expectedDeliveryDate) {
+      newErrors.expectedDeliveryDate = "Expected delivery date is required";
+    }
+
+    if (formData.status === "Vaccined" && !formData.vaccineName) {
+      newErrors.vaccineName = "Vaccine name is required";
+    }
+
+    if (formData.status === "Vaccined" && formData.vaccineName === "Other" && !formData.customVaccineName) {
+      newErrors.customVaccineName = "Please specify the vaccine name";
+    }
+
+    if (formData.status === "FeedUpdate" && !formData.feedType) {
+      newErrors.feedType = "Feed type is required";
+    }
+
+    if (formData.status === "FeedUpdate" && formData.feedType === "Other" && !formData.customFeedType) {
+      newErrors.customFeedType = "Please specify the feed type";
+    }
+
+    if (formData.status === "Sold") {
+      if (!formData.price) newErrors.price = "Price is required";
+      if (!formData.buyerName) newErrors.buyerName = "Buyer name is required";
+      if (!formData.buyerContact) newErrors.buyerContact = "Buyer contact is required";
+      if (formData.buyerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.buyerEmail)) {
+        newErrors.buyerEmail = "Invalid email format";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      toast.error("Please fix the errors in the form");
+      return;
+    }
+
+    console.log("Form submitted:", formData);
+    toast.success("Update logged successfully!");
+  };
+
+  const handleCancel = () => {
+    setFormData({
+      date: today,
+      animalId: "",
+      weight: "",
+      notes: "",
+      status: "",
+      mediaFile: null,
+      riskLevel: "",
+      diseaseName: "",
+      customDiseaseName: "",
+      maleAnimalId: "",
+      expectedDeliveryDate: "",
+      vaccineName: "",
+      customVaccineName: "",
+      nextVaccineDate: "",
+      feedType: "",
+      customFeedType: "",
+      price: "",
+      buyerName: "",
+      buyerEmail: "",
+      buyerContact: "",
+      buyerAddress: "",
+    });
+    setMediaPreview(null);
+    setErrors({});
+    toast.info("Form cleared");
+  };
+
+  return (
+    <Card className="w-full max-w-4xl mx-auto">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Calendar className="h-5 w-5" />
+          Log Animal Update
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Base Fields */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <div className="space-y-2">
+              <Label htmlFor="date">Animal Id/ Tag Number</Label>
+              <Input
+                id="animalId"
+                value={formData.animalId}
+                onChange={(e) => handleInputChange("animalId", e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="date">Date</Label>
+              <Input
+                id="date"
+                type="date"
+                value={formData.date}
+                onChange={(e) => handleInputChange("date", e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">
+                Status <span className="text-destructive">*</span>
+              </Label>
+              <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
+                <SelectTrigger className={errors.status ? "border-destructive" : ""}>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUS_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.status && <p className="text-sm text-destructive">{errors.status}</p>}
+            </div>
+
+            {formData.status !== "Sold" && (
+              <div className="space-y-2">
+                <Label htmlFor="weight">Weight (kg)</Label>
+                <Input
+                  id="weight"
+                  type="number"
+                  placeholder="Enter weight"
+                  value={formData.weight}
+                  onChange={(e) => handleInputChange("weight", e.target.value)}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Dynamic Fields Based on Status */}
+          <AnimatePresence mode="wait">
+            {/* Injured Fields */}
+            {formData.status === "Injured" && (
+              <motion.div
+                key="injured"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-4"
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="riskLevel">Risk Level</Label>
+                  <Select value={formData.riskLevel} onValueChange={(value) => handleInputChange("riskLevel", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select risk level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {RISK_LEVELS.map((level) => (
+                        <SelectItem key={level} value={level}>
+                          {level}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Diseased Fields */}
+            {formData.status === "Diseased" && (
+              <motion.div
+                key="diseased"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-4"
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="diseaseName">
+                    Disease Name <span className="text-destructive">*</span>
+                  </Label>
+                  <Select value={formData.diseaseName} onValueChange={(value) => handleInputChange("diseaseName", value)}>
+                    <SelectTrigger className={errors.diseaseName ? "border-destructive" : ""}>
+                      <SelectValue placeholder="Select disease" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DISEASE_OPTIONS.map((disease) => (
+                        <SelectItem key={disease} value={disease}>
+                          {disease}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.diseaseName && <p className="text-sm text-destructive">{errors.diseaseName}</p>}
+                </div>
+
+                {formData.diseaseName === "Other" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-2"
+                  >
+                    <Label htmlFor="customDiseaseName">
+                      Enter Disease Name <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="customDiseaseName"
+                      placeholder="Specify disease name"
+                      value={formData.customDiseaseName}
+                      onChange={(e) => handleInputChange("customDiseaseName", e.target.value)}
+                      className={errors.customDiseaseName ? "border-destructive" : ""}
+                    />
+                    {errors.customDiseaseName && <p className="text-sm text-destructive">{errors.customDiseaseName}</p>}
+                  </motion.div>
+                )}
+              </motion.div>
+            )}
+
+            {/* Pregnant Fields */}
+            {formData.status === "Pregnant" && (
+              <motion.div
+                key="pregnant"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-4"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="maleAnimalId">
+                      Male Animal ID <span className="text-destructive">*</span>
+                    </Label>
+                    <Select value={formData.maleAnimalId} onValueChange={(value) => handleInputChange("maleAnimalId", value)}>
+                      <SelectTrigger className={errors.maleAnimalId ? "border-destructive" : ""}>
+                        <SelectValue placeholder="Select male animal" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MALE_ANIMALS.map((animal) => (
+                          <SelectItem key={animal.id} value={animal.id}>
+                            {animal.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.maleAnimalId && <p className="text-sm text-destructive">{errors.maleAnimalId}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="expectedDeliveryDate">
+                      Expected Delivery Date <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="expectedDeliveryDate"
+                      type="date"
+                      value={formData.expectedDeliveryDate}
+                      onChange={(e) => handleInputChange("expectedDeliveryDate", e.target.value)}
+                      className={errors.expectedDeliveryDate ? "border-destructive" : ""}
+                    />
+                    {errors.expectedDeliveryDate && <p className="text-sm text-destructive">{errors.expectedDeliveryDate}</p>}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Vaccined Fields */}
+            {formData.status === "Vaccined" && (
+              <motion.div
+                key="vaccined"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-4"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="vaccineName">
+                      Vaccine Name <span className="text-destructive">*</span>
+                    </Label>
+                    <Select value={formData.vaccineName} onValueChange={(value) => handleInputChange("vaccineName", value)}>
+                      <SelectTrigger className={errors.vaccineName ? "border-destructive" : ""}>
+                        <SelectValue placeholder="Select vaccine" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {VACCINE_OPTIONS.map((vaccine) => (
+                          <SelectItem key={vaccine} value={vaccine}>
+                            {vaccine}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.vaccineName && <p className="text-sm text-destructive">{errors.vaccineName}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="nextVaccineDate">Next Vaccine Date</Label>
+                    <Input
+                      id="nextVaccineDate"
+                      type="date"
+                      value={formData.nextVaccineDate}
+                      onChange={(e) => handleInputChange("nextVaccineDate", e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {formData.vaccineName === "Other" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-2"
+                  >
+                    <Label htmlFor="customVaccineName">
+                      Enter Vaccine Name <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="customVaccineName"
+                      placeholder="Specify vaccine name"
+                      value={formData.customVaccineName}
+                      onChange={(e) => handleInputChange("customVaccineName", e.target.value)}
+                      className={errors.customVaccineName ? "border-destructive" : ""}
+                    />
+                    {errors.customVaccineName && <p className="text-sm text-destructive">{errors.customVaccineName}</p>}
+                  </motion.div>
+                )}
+              </motion.div>
+            )}
+
+            {/* FeedUpdate Fields */}
+            {formData.status === "FeedUpdate" && (
+              <motion.div
+                key="feedupdate"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-4"
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="feedType">
+                    Feed Type <span className="text-destructive">*</span>
+                  </Label>
+                  <Select value={formData.feedType} onValueChange={(value) => handleInputChange("feedType", value)}>
+                    <SelectTrigger className={errors.feedType ? "border-destructive" : ""}>
+                      <SelectValue placeholder="Select feed type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {FEED_OPTIONS.map((feed) => (
+                        <SelectItem key={feed} value={feed}>
+                          {feed}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.feedType && <p className="text-sm text-destructive">{errors.feedType}</p>}
+                </div>
+
+                {formData.feedType === "Other" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-2"
+                  >
+                    <Label htmlFor="customFeedType">
+                      Enter Feed Type <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="customFeedType"
+                      placeholder="Specify feed type"
+                      value={formData.customFeedType}
+                      onChange={(e) => handleInputChange("customFeedType", e.target.value)}
+                      className={errors.customFeedType ? "border-destructive" : ""}
+                    />
+                    {errors.customFeedType && <p className="text-sm text-destructive">{errors.customFeedType}</p>}
+                  </motion.div>
+                )}
+              </motion.div>
+            )}
+
+            {/* Sold Fields */}
+            {formData.status === "Sold" && (
+              <motion.div
+                key="sold"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-4"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="price">
+                      Price <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="price"
+                      type="number"
+                      placeholder="Enter price"
+                      value={formData.price}
+                      onChange={(e) => handleInputChange("price", e.target.value)}
+                      className={errors.price ? "border-destructive" : ""}
+                    />
+                    {errors.price && <p className="text-sm text-destructive">{errors.price}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="buyerName">
+                      Buyer Name <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="buyerName"
+                      placeholder="Enter buyer name"
+                      value={formData.buyerName}
+                      onChange={(e) => handleInputChange("buyerName", e.target.value)}
+                      className={errors.buyerName ? "border-destructive" : ""}
+                    />
+                    {errors.buyerName && <p className="text-sm text-destructive">{errors.buyerName}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="buyerEmail">Buyer Email</Label>
+                    <Input
+                      id="buyerEmail"
+                      type="email"
+                      placeholder="buyer@example.com"
+                      value={formData.buyerEmail}
+                      onChange={(e) => handleInputChange("buyerEmail", e.target.value)}
+                      className={errors.buyerEmail ? "border-destructive" : ""}
+                    />
+                    {errors.buyerEmail && <p className="text-sm text-destructive">{errors.buyerEmail}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="buyerContact">
+                      Buyer Contact <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="buyerContact"
+                      placeholder="Enter contact number"
+                      value={formData.buyerContact}
+                      onChange={(e) => handleInputChange("buyerContact", e.target.value)}
+                      className={errors.buyerContact ? "border-destructive" : ""}
+                    />
+                    {errors.buyerContact && <p className="text-sm text-destructive">{errors.buyerContact}</p>}
+                  </div>
+
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="buyerAddress">Buyer Address</Label>
+                    <Textarea
+                      id="buyerAddress"
+                      placeholder="Enter buyer address"
+                      value={formData.buyerAddress}
+                      onChange={(e) => handleInputChange("buyerAddress", e.target.value)}
+                      rows={3}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Notes Field */}
+          {formData.status && formData.status !== "Sold" && (
+            <div className="space-y-2">
+              <Label htmlFor="notes">
+                Notes {formData.status === "Injured" && <span className="text-destructive">*</span>}
+              </Label>
+              <Textarea
+                id="notes"
+                placeholder="Add any additional notes..."
+                value={formData.notes}
+                onChange={(e) => handleInputChange("notes", e.target.value)}
+                rows={4}
+                className={errors.notes ? "border-destructive" : ""}
+              />
+              {errors.notes && <p className="text-sm text-destructive">{errors.notes}</p>}
+            </div>
+          )}
+
+          {/* Media Upload */}
+          <div className="space-y-2">
+            <Label htmlFor="media">Upload Image</Label>
+            <div className="flex items-center gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => document.getElementById("media")?.click()}
+                className="w-full md:w-auto"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Choose File
+              </Button>
+              <input
+                id="media"
+                type="file"
+                accept="image/*"
+                onChange={handleMediaUpload}
+                className="hidden"
+              />
+              {formData.mediaFile && (
+                <span className="text-sm text-muted-foreground">{formData.mediaFile.name}</span>
+              )}
+            </div>
+
+            {mediaPreview && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="relative mt-4"
+              >
+                <img
+                  src={mediaPreview}
+                  alt="Preview"
+                  className="w-full max-w-md h-48 object-cover rounded-lg border"
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-2 right-2"
+                  onClick={removeMedia}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </motion.div>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancel}
+              className="w-full sm:w-auto"
+            >
+              Cancel
+            </Button>
+            <Button type="submit" className="w-full sm:w-auto">
+              Save Update
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+
+export default AnimalUpdate

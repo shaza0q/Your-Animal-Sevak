@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import AddAnimal from "./pages/AddAnimal";
 import AddFarm from "./pages/AddFarm";
 import FarmInsights from "./pages/FarmInsights";
+import AnimalUpdate from "./pages/AnimalUpdateForm";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/addFarm" element={<AddFarm/>} />
           <Route path="/addAnimal" element={<AddAnimal/>} />
           <Route path="/farmInsights/:id" element={<FarmInsights/>} />
+          <Route path="/animalUpdate" element={<AnimalUpdate/>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -9,5 +9,4 @@ router.post('/addFarm', protect, addFarmData)
 router.get('/getFarm', protect, getFarmData)
 
 
-
 module.exports = router

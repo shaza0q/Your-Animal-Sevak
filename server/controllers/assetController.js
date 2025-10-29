@@ -50,6 +50,7 @@ const getFarmData = async(req, res) => {
 }
 
 
+
 module.exports = {
     addFarmData,
     getFarmData

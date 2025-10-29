@@ -1,0 +1,252 @@
+[
+  {
+    "type": "Cow",
+    "breeds": [
+      "Gir",
+      "Sahiwal",
+      "Red Sindhi",
+      "Tharparkar",
+      "Ongole",
+      "Kankrej",
+      "Hariana",
+      "Rathi",
+      "Holstein Friesian",
+      "Jersey",
+      "Crossbreed",
+      "Hallikar",
+      "Malnad Gidda",
+      "Dhanni",
+      "Ponwar",
+      "Kenkatha",
+      "Bargur",
+      "Amrit Mahal",
+      "Khillar",
+      "Kangayam",
+      "Deoni",
+      "Krishna Valley",
+      "Dangi",
+      "Gaolao",
+      "Vechur"
+    ]
+  },
+  {
+    "type": "Buffalo",
+    "breeds": [
+      "Murrah",
+      "Nili-Ravi",
+      "Surti",
+      "Jaffarabadi",
+      "Banni",
+      "Mehsana",
+      "Nagpuri",
+      "Pandharpuri",
+      "Sambhalpuri",
+      "Toda",
+      "Marathwadi",
+      "Kundi",
+      "Manda"
+    ]
+  },
+  {
+    "type": "Goat",
+    "breeds": [
+      "Jamunapari",
+      "Beetal",
+      "Barbari",
+      "Sirohi",
+      "Black Bengal",
+      "Osmanabadi",
+      "Jakhrana",
+      "Malabari",
+      "Kutchi",
+      "Zalawadi",
+      "Sangamneri",
+      "Gaddi",
+      "Changthangi",
+      "Ganjam",
+      "Battisi",
+      "Attapady Black",
+      "Assam Hill",
+      "Surti",
+      "Marwari"
+    ]
+  },
+  {
+    "type": "Sheep",
+    "breeds": [
+      "Deccani",
+      "Bellary",
+      "Chokla",
+      "Marwari",
+      "Nellore",
+      "Gaddi",
+      "Rampur Bushair",
+      "Muzaffarnagri",
+      "Kenguri",
+      "Mandya",
+      "Madgyal",
+      "Patanwadi",
+      "Tibetan",
+      "Coimbatore",
+      "Sonadi",
+      "Bonpala"
+    ]
+  },
+  {
+    "type": "Chicken",
+    "breeds": [
+      "Aseel",
+      "Kadaknath",
+      "Vanaraja",
+      "Giriraja",
+      "Rhode Island Red",
+      "White Leghorn",
+      "Broiler",
+      "Gramapriya",
+      "Busra",
+      "Chittagong",
+      "Dua (Danki)",
+      "Daothigir",
+      "Ghagus",
+      "Harringhata Black",
+      "Kalasthi",
+      "Nicobari",
+      "Mewari",
+      "Hansli",
+      "Uttara",
+      "Aravali",
+      "Desi Chicken",
+      "Native Chicken"
+    ]
+  },
+  {
+    "type": "Duck",
+    "breeds": [
+      "Khaki Campbell",
+      "White Pekin",
+      "Indian Runner",
+      "Muscovy",
+      "Nageswari",
+      "Alleppey",
+      "Chara",
+      "Kuttanad",
+      "Sythet",
+      "Desi Duck"
+    ]
+  },
+  {
+    "type": "Rabbit",
+    "breeds": [
+      "New Zealand White",
+      "California White",
+      "Grey Giant",
+      "Soviet Chinchilla",
+      "Dutch",
+      "Angora",
+      "Flemish Giant",
+      "Black Brown",
+      "English Spot",
+      "White Giant"
+    ]
+  },
+  {
+    "type": "Dog",
+    "breeds": [
+      "Rajapalayam",
+      "Mudhol Hound",
+      "Himalayan Sheepdog",
+      "Indian Pariah Dog",
+      "Labrador Retriever",
+      "German Shepherd",
+      "Golden Retriever",
+      "Doberman",
+      "Pug",
+      "Rottweiler",
+      "Beagle",
+      "Chippiparai",
+      "Kanni",
+      "Gaddi Kutta",
+      "Bakharwal"
+    ]
+  },
+  {
+    "type": "Cat",
+    "breeds": [
+      "Indian Billi",
+      "Persian Cat",
+      "Siamese Cat",
+      "Maine Coon",
+      "Bombay Cat",
+      "Bengal Cat",
+      "Ragdoll",
+      "British Shorthair",
+      "Exotic Shorthair",
+      "Tabby"
+    ]
+  },
+  {
+    "type": "Camel",
+    "breeds": [
+      "Bikaneri",
+      "Jaisalmeri",
+      "Kachchi",
+      "Mewari",
+      "Sindhi",
+      "Kutchi",
+      "Marwari",
+      "Desi Camel"
+    ]
+  },
+  {
+    "type": "Donkey",
+    "breeds": [
+      "Spiti",
+      "Sindhi",
+      "Kachchhi",
+      "Desi",
+      "Halari",
+      "Kathiawari Donkey",
+      "Gujarat Donkey"
+    ]
+  },
+  {
+    "type": "Horse",
+    "breeds": [
+      "Marwari",
+      "Kathiawari",
+      "Spiti",
+      "Manipuri Pony",
+      "Bhutia",
+      "Zanskari",
+      "Chetak",
+      "Nukra",
+      "Desi Horse"
+    ]
+  },
+  {
+    "type": "Pigeon",
+    "breeds": [
+      "Lahore",
+      "Jacobins",
+      "King",
+      "Fantail",
+      "Homer",
+      "Modena",
+      "Indian Fantail",
+      "Tippler",
+      "Dragoon",
+      "Tumbler"
+    ]
+  },
+  {
+    "type": "Turkey",
+    "breeds": [
+      "Broad Breasted White",
+      "Broad Breasted Bronze",
+      "Beltsville Small White",
+      "Norfolk Black",
+      "Bourbon Red",
+      "Narragansett"
+    ]
+  }
+]

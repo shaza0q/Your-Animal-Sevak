@@ -219,6 +219,10 @@ const Dashboard = () => {
                   <Plus className="h-6 w-6" />
                   <span>Add Animal</span>
                 </Button>
+                <Button className="h-auto flex-col gap-2 py-6" variant="default" onClick = { () => navigate("/animalUpdate")}>
+                  <Plus className="h-6 w-6" />
+                  <span>Update Animal</span>
+                </Button>
                 <Button className="h-auto flex-col gap-2 py-6" variant="outline">
                   <Users className="h-6 w-6" />
                   <span>Directory</span>

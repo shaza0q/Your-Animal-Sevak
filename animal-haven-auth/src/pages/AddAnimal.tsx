@@ -7,9 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { cloudinaryUpload } from "@/api/cloudinary"
 import { getUserFarm } from "@/api/getUserFarms"
-import imageCompression from 'browser-image-compression'
+import { registerAnimal } from "@/api/registerAnimal"
 import { 
   Beef, 
   Heart, 
@@ -26,40 +25,24 @@ const AddAnimal = () => {
   const preselectedFarmId = location.state?.farmId || "";
 
   const [farmData, setFarmData] = useState<[] | null>()
+  
   const [formData, setFormData] = useState({
-    // Basic Information
-    animalId: "",
     farmId: "",
+    animalId: "",
+    name: "",
     animalType: "",
+    motherId: "",
+    fatherId: "",
+    otherAnimalType: "",
     breed: "",
     gender: "",
-    age: "",
     generation: "",
     weight: "",
-    color: "",
+    notes: "",
     dateOfBirth: "",
-    
-    // Health & Care
-    vaccinationStatus: "",
-    lastVetCheckup: "",
-    healthNotes: "",
-    pregnancyStatus: "",
-    numberOfOffspring: "",
-    feedType: "",
-    wateringSchedule: "",
-    
-    // Sales Information
-    estimatedPrice: "",
-    forSale: false,
-    dateListedForSale: "",
-    buyerInfo: "",
-    meatYield: "",
-    purpose: "",
-    
+    acquisitionDate: "",
   });
 
-  const [animalPhoto, setAnimalPhoto] = useState('')
-  const [vaccinePhoto, setVaccinePhoto] = useState('')
 
   useEffect(() => {
     const getFarms = async() => {
@@ -87,9 +70,8 @@ const AddAnimal = () => {
   };
 
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
-    
     // Validate required fields
     if (!formData.animalType || !formData.breed || !formData.gender) {
       toast({
@@ -99,18 +81,28 @@ const AddAnimal = () => {
       });
       return;
     }
-
-    console.log("Form Data Submitted:", formData);
-    console.log("animal photo: ", animalPhoto);
-    console.log("animal photo: ", vaccinePhoto);
-
-    toast({
-      title: "Animal Added Successfully!",
-      description: `${formData.breed} has been added to the system.`,
-    });
     
-    // Navigate back to dashboard after submission
-    setTimeout(() => navigate("/dashboard"), 1500);
+    try{
+
+      const res = await registerAnimal(formData)
+
+      toast({
+        title: "Animal Added Successfully!",
+        description: `${formData.name} has been added to the system.`,
+      });
+      
+      // Navigate back to dashboard after submission
+      setTimeout(() => navigate("/dashboard"), 1000);
+    }
+    catch(err){
+      toast({
+        title: "Not able to add Animal Data",
+        description: err,
+        variant: "destructive",
+      });
+      return;
+    }
+    
   };
 
   return (
@@ -129,39 +121,26 @@ const AddAnimal = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold">Add New Animal</h1>
-            <p className="text-muted-foreground mt-1">
-              Enter the details of the new animal to add it to your livestock system
-            </p>
-          </div>
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-3xl font-bold mb-2">Add New Animal</h1>
+          <p className="text-muted-foreground mb-6">
+            Enter the animal’s details below.
+          </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Basic Information */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Beef className="h-5 w-5" />
                   Basic Information
                 </CardTitle>
-                <CardDescription>
-                  Essential details about the animal
-                </CardDescription>
+                <CardDescription>Essential details about the animal</CardDescription>
               </CardHeader>
-              <CardContent className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="animalId">Animal ID / Tag Number</Label>
-                  <Input
-                    id="animalId"
-                    placeholder="e.g., A-001"
-                    value={formData.animalId}
-                    onChange={(e) => handleInputChange("animalId", e.target.value)}
-                  />
-                </div>
 
+              <CardContent className="grid md:grid-cols-2 gap-4">
+                {/* Farm */}
                 <div className="space-y-2">
-                  <Label htmlFor="animalType">Farm Name *</Label>
+                  <Label>Farm Name *</Label>
                   <Select
                     value={formData.farmId}
                     onValueChange={(value) => handleInputChange("farmId", value)}
@@ -171,90 +150,110 @@ const AddAnimal = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {farmData && farmData.length > 0 ? (
-                        farmData.map((f: any, index: number) => (
+                        farmData.map((f: any) => (
                           <SelectItem key={f._id} value={f._id}>
                             {f.name}
                           </SelectItem>
                         ))
                       ) : (
-                        <SelectItem value="NA">No farm is listed</SelectItem>
-
+                        <SelectItem value="NA">No farm found</SelectItem>
                       )}
                     </SelectContent>
                   </Select>
                 </div>
 
+                {/* Animal ID */}
                 <div className="space-y-2">
-                  <Label htmlFor="animalType">Type of Animal *</Label>
+                  <Label>Animal ID / Tag</Label>
+                  <Input
+                    placeholder="e.g., A-001"
+                    value={formData.animalId}
+                    onChange={(e) => handleInputChange("animalId", e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Animal Name</Label>
+                  <Input
+                    placeholder="e.g., Bhuri"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange("name", e.target.value)}
+                  />
+                </div>
+
+                {/* parent ID */}
+                
+
+                {/* Animal Type */}
+                <div className="space-y-2">
+                  <Label>Animal Type *</Label>
                   <Select
                     value={formData.animalType}
                     onValueChange={(value) => handleInputChange("animalType", value)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select animal type" />
+                      <SelectValue placeholder="Select Animal Type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="cow">Cow</SelectItem>
-                      <SelectItem value="goat">Goat</SelectItem>
-                      <SelectItem value="sheep">Sheep</SelectItem>
-                      <SelectItem value="pig">Pig</SelectItem>
-                      <SelectItem value="chicken">Chicken</SelectItem>
-                      <SelectItem value="horse">Horse</SelectItem>
+                      <SelectItem value="Cow">Cow</SelectItem>
+                      <SelectItem value="Buffalo">Buffalo</SelectItem>
+                      <SelectItem value="Goat">Goat</SelectItem>
+                      <SelectItem value="Sheep">Sheep</SelectItem>
+                      <SelectItem value="Chicken">Chicken</SelectItem>
+                      <SelectItem value="Duck">Duck</SelectItem>
+                      <SelectItem value="Rabbit">Rabbit</SelectItem>
+                      <SelectItem value="Horse">Horse</SelectItem>
+                      <SelectItem value="Camel">Camel</SelectItem>
+                      <SelectItem value="Dog">Dog</SelectItem>
+                      <SelectItem value="Cat">Cat</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
+                {formData.animalType === "Other" && (
+                  <div className="mt-2">
+                    <Label>Other Animal Type</Label>
+                    <Input
+                      placeholder="Enter animal type"
+                      value={formData.otherAnimalType || ""}
+                      onChange={(e) => handleInputChange("otherBreedName", e.target.value)}
+                    />
+                  </div>
+                )}
+
+                {/* Breed */}
                 <div className="space-y-2">
-                  <Label htmlFor="breed">Breed *</Label>
+                  <Label>Breed *</Label>
                   <Input
-                    id="breed"
-                    placeholder="e.g., Holstein"
+                    placeholder="e.g., Barbari"
                     value={formData.breed}
                     onChange={(e) => handleInputChange("breed", e.target.value)}
                   />
                 </div>
 
+                {/* Gender */}
                 <div className="space-y-2">
-                  <Label htmlFor="gender">Gender *</Label>
+                  <Label>Gender *</Label>
                   <Select
                     value={formData.gender}
                     onValueChange={(value) => handleInputChange("gender", value)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select gender" />
+                      <SelectValue placeholder="Select Gender" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="Male">Male</SelectItem>
+                      <SelectItem value="Female">Female</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
+                
+                {/* Weight */}
                 <div className="space-y-2">
-                  <Label htmlFor="age">Age (years)</Label>
+                  <Label>Weight (kg)</Label>
                   <Input
-                    id="age"
-                    type="number"
-                    placeholder="e.g., 2"
-                    value={formData.age}
-                    onChange={(e) => handleInputChange("age", e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="generation">Generation</Label>
-                  <Input
-                    id="generation"
-                    placeholder="e.g., F1, F2"
-                    value={formData.generation}
-                    onChange={(e) => handleInputChange("generation", e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="weight">Weight (kg)</Label>
-                  <Input
-                    id="weight"
                     type="number"
                     placeholder="e.g., 450"
                     value={formData.weight}
@@ -262,130 +261,80 @@ const AddAnimal = () => {
                   />
                 </div>
 
+                {/* Date of Birth */}
                 <div className="space-y-2">
-                  <Label htmlFor="color">Color / Markings</Label>
+                  <Label>Date of Birth</Label>
                   <Input
-                    id="color"
-                    placeholder="e.g., Black and white spotted"
-                    value={formData.color}
-                    onChange={(e) => handleInputChange("color", e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="dateOfBirth">Date of Birth / Acquisition</Label>
-                  <Input
-                    id="dateOfBirth"
                     type="date"
                     value={formData.dateOfBirth}
                     onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
                   />
                 </div>
+
+                {/* Date of acquisition */}
+                <div className="space-y-2">
+                  <Label>Date of Acquisition</Label>
+                  <Input
+                    type="date"
+                    value={formData.acquisitionDate}
+                    onChange={(e) => handleInputChange("acquisitionDate", e.target.value)}
+                  />
+                </div>
+               
               </CardContent>
             </Card>
 
-            {/* Health & Care Information */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Heart className="h-5 w-5" />
-                  Health & Care Information
+                  <DollarSign className="h-5 w-5" />
+                  Parent Information
                 </CardTitle>
                 <CardDescription>
-                  Medical and care details
+                  Parent details
                 </CardDescription>
               </CardHeader>
+
               <CardContent className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="vaccinationStatus">Vaccination Status</Label>
-                  <Select
-                    value={formData.vaccinationStatus}
-                    onValueChange={(value) => handleInputChange("vaccinationStatus", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="up-to-date">Up to date</SelectItem>
-                      <SelectItem value="due">Due</SelectItem>
-                      <SelectItem value="not-started">Not started</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                    <Label>Mother ID / Tag</Label>
+                    <Input
+                      placeholder="e.g., A-001"
+                      value={formData.motherId}
+                      onChange={(e) => handleInputChange("motherId", e.target.value)}
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="lastVetCheckup">Last Vet Checkup Date</Label>
-                  <Input
-                    id="lastVetCheckup"
-                    type="date"
-                    value={formData.lastVetCheckup}
-                    onChange={(e) => handleInputChange("lastVetCheckup", e.target.value)}
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label>Father ID / Tag</Label>
+                    <Input
+                      placeholder="e.g., A-001"
+                      value={formData.fatherId}
+                      onChange={(e) => handleInputChange("fatherId", e.target.value)}
+                    />
+                  </div>
 
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="healthNotes">Health Notes / Conditions</Label>
-                  <Textarea
-                    id="healthNotes"
-                    placeholder="Any health conditions, allergies, or special notes..."
-                    value={formData.healthNotes}
-                    onChange={(e) => handleInputChange("healthNotes", e.target.value)}
-                    rows={3}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="pregnancyStatus">Pregnancy Status</Label>
-                  <Select
-                    value={formData.pregnancyStatus}
-                    onValueChange={(value) => handleInputChange("pregnancyStatus", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="yes">Yes</SelectItem>
-                      <SelectItem value="no">No</SelectItem>
-                      <SelectItem value="na">N/A</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="numberOfOffspring">Number of Offspring</Label>
-                  <Input
-                    id="numberOfOffspring"
-                    type="number"
-                    placeholder="e.g., 3"
-                    value={formData.numberOfOffspring}
-                    onChange={(e) => handleInputChange("numberOfOffspring", e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="feedType">Feed Type / Diet Plan</Label>
-                  <Textarea
-                    id="feedType"
-                    placeholder="Describe the feed type and diet plan..."
-                    value={formData.feedType}
-                    onChange={(e) => handleInputChange("feedType", e.target.value)}
-                    rows={2}
-                  />
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="wateringSchedule">Watering Schedule</Label>
-                  <Input
-                    id="wateringSchedule"
-                    placeholder="e.g., Twice daily - 6 AM and 6 PM"
-                    value={formData.wateringSchedule}
-                    onChange={(e) => handleInputChange("wateringSchedule", e.target.value)}
-                  />
-                </div>
               </CardContent>
+
             </Card>
 
-            {/* Sales Information */}
+            {/* Submit Buttons */}
+            <div className="flex gap-4 justify-end">
+              <Button type="button" variant="outline" onClick={() => navigate("/dashboard")}>
+                Cancel
+              </Button>
+              <Button type="submit" className="flex items-center gap-2">
+                <Save className="h-4 w-4" />
+                Save Animal
+              </Button>
+            </div>
+          </form>
+        </div>
+      </main>
+    </div>
+  );
+};
+            {/* Sales Information
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -473,64 +422,7 @@ const AddAnimal = () => {
                 </div>
               </CardContent>
             </Card>
+ */}
 
-            {/* Media Attachments */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Camera className="h-5 w-5" />
-                  Media Attachments
-                </CardTitle>
-                <CardDescription>
-                  Upload photos and documents
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="animalPhoto">Animal Photo</Label>
-                  <Input
-                    id="animalPhoto"
-                    type="file"
-                    accept="image/*"
-                    onChange={async(e) => {
-                      const res = await cloudinaryUpload(e.target.files[0], setAnimalPhoto)
-                    }}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="healthDocument">Vaccination Certificate / Health Document</Label>
-                  <Input
-                    id="healthDocument"
-                    type="file"
-                    accept=".pdf,.doc,.docx,image/*"
-                    onChange={async(e) => {
-                      const res = await cloudinaryUpload(e.target.files[0], setVaccinePhoto)
-                    }}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Submit Button */}
-            <div className="flex gap-4 justify-end">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate("/dashboard")}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" className="flex items-center gap-2">
-                <Save className="h-4 w-4" />
-                Save Animal
-              </Button>
-            </div>
-          </form>
-        </div>
-      </main>
-    </div>
-  );
-};
 
 export default AddAnimal;

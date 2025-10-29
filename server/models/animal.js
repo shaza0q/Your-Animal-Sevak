@@ -16,7 +16,23 @@ const animalSchema = new mongoose.Schema({
 
   type: { 
     type: String, 
-    enum: ["Cow", "Goat", "Sheep", "Pig", "Chicken", "Other"], 
+    enum: [
+    "Cow",
+    "Buffalo",
+    "Goat",
+    "Sheep",
+    "Chicken",
+    "Duck",
+    "Rabbit",
+    "Dog",
+    "Cat",
+    "Camel",
+    "Donkey",
+    "Horse",
+    "Pigeon",
+    "Turkey",
+    "other"
+  ], 
     required: true 
   },
 
@@ -28,7 +44,11 @@ const animalSchema = new mongoose.Schema({
     required: true 
   },
 
-  generation: { type: String },
+  motherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Animal' },
+  
+  fatherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Animal' },
+
+  generation: { type: Number, default: 1 },
 
   weight: { type: Number },
 
@@ -47,10 +67,6 @@ const animalSchema = new mongoose.Schema({
   
   location: { type: String },
 
-  feedType: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'FeedMaster' 
-  },
 
 }, { timestamps: true });
 
