@@ -23,7 +23,7 @@ const addFarmData = async(req, res) => {
         return res.status(200).json({message: 'Farm added successfully'})
     }
     catch(err){
-        console.error("Error in Adding farm")
+        console.error("Error in Adding farm ", err)
 
         res.status(500).json({message: "server error"})
     }

@@ -13,7 +13,6 @@ const FarmSchema = new mongoose.Schema({
 
     animalTypes: {
         type: [String],  // <-- array of strings
-        enum: ["Cow", "Goat", "Horse", "Dog", "Sheep", "Chicken"], // restrict to valid choices
         default: []
     },
 

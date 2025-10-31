@@ -1,4 +1,19 @@
-const Animal = require('../models/animal');
+const Animal = require('../models/animal')
+const BreedMaster = require('../models/breedMaster')
+const UpdateAnimal = require('../models/animalUpdate')
+const multer = require('multer')
+const cloudinary = require('cloudinary').v2
+const fs = require('fs')
+const dotenv = require('dotenv')
+dotenv.config()
+
+const upload = multer({dest: "uploads/"})
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+})
 
 const addAnimalData = async (req, res) => {
     const userId = req.user.id;
@@ -74,6 +89,88 @@ const addAnimalData = async (req, res) => {
     }
 };
 
+const updateAnimalData = async(req, res) => {
+    try {
+
+        let imageUrl = null;
+        const userId = req.user.id
+
+        const {
+            animalId,
+            date,
+            weight,
+            notes,
+            status,
+            riskLevel,
+            vaccineName,
+            diseaseName,
+            maleAnimalId,
+            expectedDeliveryDate,
+            nextVaccineDate,
+            price,
+            buyerName,
+            buyerEmail,
+            buyerContact,
+            buyerAddress,
+            } = req.body;
+
+        
+        // console.log(tagNumber)
+
+        const animalData = await Animal.findOne({tagNumber: animalId})
+        
+        if(!animalData){
+            return res.status(404).json({message: "Animal TagNumber not found"});
+        }
+
+        const updateData = {};
+
+        // Loop through each key dynamically to avoid manual repetition
+        for (const [key, value] of Object.entries(req.body)) {
+            if (
+                value !== undefined && 
+                value !== null && 
+                value !== '' // ignore empty strings
+            ) {
+                updateData[key] = value;
+            }
+        }
+
+        
+        updateData.staffId = userId
+        updateData.animalId = animalData._id;
+
+        if(req.file){
+            const filePath = req.file.path;
+    
+            const result = await cloudinary.uploader.upload(filePath, {
+                folder: "animalPhotos", // optional folder name
+            });
+
+            imageUrl = result.secure_url
+
+            updateData.mediaUrl = imageUrl
+            
+            fs.unlinkSync(filePath)
+        }
+
+
+        console.log(updateData);
+
+        const animalUpdate = new UpdateAnimal(updateData)
+        await animalUpdate.save()
+
+        return res.status(201).json({message: "Animal update recorded successfully", data: animalData})
+
+    }
+    catch(err){
+        console.error("Error updating animal", err);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
 module.exports = {
     addAnimalData,
+    updateAnimalData,
+    upload
 };

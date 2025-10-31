@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, User, Mail, Phone, Shield, Plus, FileText, Bell, Users, TrendingUp, MapPin } from "lucide-react";
+import { LogOut, User, Mail, Phone, Shield, Plus, FileText, Bell, Users, TrendingUp, MapPin, AlertTriangle, Heart, CheckCircle2, Activity } from "lucide-react";
 import { getUserData } from "@/api/getUserData"
 import { handleLogout } from "@/api/handleLogout"
 import { getUserFarm } from "@/api/getUserFarms"
@@ -23,6 +23,12 @@ const Dashboard = () => {
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
   const [farm, setFarm] = useState<any[] | null>(null)
+
+  const abnormalAnimals = [
+    { id: 1, name: "Cow #12", status: "Sick" },
+    { id: 2, name: "Goat #7", status: "Injured" },
+    { id: 3, name: "Horse #2", status: "Sick" },
+  ];
 
    useEffect(() => {
         const checkAuth = async () => {
@@ -48,7 +54,7 @@ const Dashboard = () => {
             try {
                 // 1. AWAIT the API call to get the resolved user data
                 const farmData = await getUserFarm(); 
-                console.log(farmData)
+                // console.log(farmData)
                 // 2. Set the state with the actual data
                 setFarm(farmData); 
 
@@ -111,17 +117,87 @@ const Dashboard = () => {
             </CardHeader>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Dashboard</CardTitle>
-              <CardDescription>Manage your animals and track their health</CardDescription>
-            </CardHeader>
-            <CardContent>
+          
               {/* <p className="text-muted-foreground">
                 This is your dashboard. Animal management features will be added here.
               </p> */}
             
+            {/* Health Overview & Abnormal Status */}
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Health Overview */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5" />
+                    Animal Health Summary
+                  </CardTitle>
+                  <CardDescription>Current health status overview</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
+                    <div className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      <span className="font-medium">Healthy</span>
+                    </div>
+                    <span className="text-2xl font-bold text-green-600 dark:text-green-400">15</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-4 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                    <div className="flex items-center gap-3">
+                      <Heart className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                      <span className="font-medium">Under Treatment</span>
+                    </div>
+                    <span className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">3</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800">
+                    <div className="flex items-center gap-3">
+                      <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                      <span className="font-medium">Critical</span>
+                    </div>
+                    <span className="text-2xl font-bold text-red-600 dark:text-red-400">1</span>
+                  </div>
+                </CardContent>
+              </Card>
 
+              {/* Abnormal Status Panel */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5" />
+                    Animals Requiring Attention
+                  </CardTitle>
+                  <CardDescription>
+                    {abnormalAnimals.length} animals need immediate care
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {abnormalAnimals.map((animal) => (
+                    <div 
+                      key={animal.id} 
+                      className="flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors cursor-pointer"
+                    >
+                      <div>
+                        <p className="font-medium">{animal.name}</p>
+                        <Badge variant={animal.status === "Sick" ? "destructive" : "secondary"} className="mt-1">
+                          {animal.status}
+                        </Badge>
+                      </div>
+                      <Button variant="outline" size="sm">
+                        View Details
+                      </Button>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+            
+            <Card>
+            <CardHeader>
+              <CardTitle>Your Farms</CardTitle>
+              <CardDescription>Manage your animals and track their health</CardDescription>
+            </CardHeader>
+            <CardContent>
 
             {/* Add Farm page */}
             <div>

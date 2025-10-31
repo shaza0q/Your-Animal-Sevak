@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { getUserFarm } from "@/api/getUserFarms"
 import { registerAnimal } from "@/api/registerAnimal"
+import { getBreedData } from "@/api/getBreedData"
 import { 
   Beef, 
   Heart, 
@@ -18,6 +19,12 @@ import {
   Save
 } from "lucide-react";
 
+interface Breed {
+  animalType: string;
+  breedName: string;
+  _id?: string;
+}
+
 const AddAnimal = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -25,6 +32,8 @@ const AddAnimal = () => {
   const preselectedFarmId = location.state?.farmId || "";
 
   const [farmData, setFarmData] = useState<[] | null>()
+  const [breedData, setBreedData] = useState<[Breed] | null>()
+  const [availableBreeds, setAvailableBreeds] = useState<string[] | null>()
   
   const [formData, setFormData] = useState({
     farmId: "",
@@ -59,9 +68,54 @@ const AddAnimal = () => {
       }
     }
 
+    
     getFarms()
 
   }, [navigate])
+
+
+  useEffect(() => {
+    const getBreeds = async() => {
+      try{
+        const response = await getBreedData();
+        setBreedData(response);
+
+
+      }
+      catch(err){
+        console.log("Error in fetching breed data ", err)
+
+        toast({
+          title: "Failed to load breed data",
+          description: "Please refresh the page.",
+          variant: "destructive",
+        });
+
+      }
+    }
+
+    getBreeds()
+
+
+  }, [])
+
+  // console.log(breedData)
+
+  useEffect(() => {
+
+    if (formData.animalType && breedData && breedData.length > 0) {
+      const filtered = breedData
+        .filter(b => b.animalType === formData.animalType)
+        .map(b => b.breedName);
+      setAvailableBreeds(filtered);
+    } else {
+      setAvailableBreeds([]);
+    }
+
+    // console.log("Available breeds: ", availableBreeds)
+
+  }, [formData.animalType, breedData])
+
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -168,7 +222,7 @@ const AddAnimal = () => {
                   <Input
                     placeholder="e.g., A-001"
                     value={formData.tagNumber}
-                    onChange={(e) => handleInputChange("tagNumber", e.target.value)}
+                    onChange={(e) => handleInputChange("tagNumber", e.target.value.toUpperCase())}
                   />
                 </div>
 
@@ -195,17 +249,14 @@ const AddAnimal = () => {
                       <SelectValue placeholder="Select Animal Type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Cow">Cow</SelectItem>
-                      <SelectItem value="Buffalo">Buffalo</SelectItem>
-                      <SelectItem value="Goat">Goat</SelectItem>
-                      <SelectItem value="Sheep">Sheep</SelectItem>
-                      <SelectItem value="Chicken">Chicken</SelectItem>
-                      <SelectItem value="Duck">Duck</SelectItem>
-                      <SelectItem value="Rabbit">Rabbit</SelectItem>
-                      <SelectItem value="Horse">Horse</SelectItem>
-                      <SelectItem value="Camel">Camel</SelectItem>
-                      <SelectItem value="Dog">Dog</SelectItem>
-                      <SelectItem value="Cat">Cat</SelectItem>
+                      {breedData && breedData.length > 0 ? [...new Set(breedData.map(b => b.animalType))].map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))
+                      : (
+                          <SelectItem value="NA">No Animal found</SelectItem>
+                        )}
                       <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                   </Select>
@@ -225,11 +276,25 @@ const AddAnimal = () => {
                 {/* Breed */}
                 <div className="space-y-2">
                   <Label>Breed *</Label>
-                  <Input
-                    placeholder="e.g., Barbari"
+                  <Select
                     value={formData.breed}
-                    onChange={(e) => handleInputChange("breed", e.target.value)}
-                  />
+                    onValueChange={(value) => handleInputChange("breed", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Breed" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableBreeds && availableBreeds.length > 0 ? (
+                        availableBreeds.map((breed) => (
+                          <SelectItem key={breed} value={breed}>
+                            {breed}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="Other">Other</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Gender */}
@@ -301,7 +366,7 @@ const AddAnimal = () => {
                     <Input
                       placeholder="e.g., A-001"
                       value={formData.motherId}
-                      onChange={(e) => handleInputChange("motherId", e.target.value)}
+                      onChange={(e) => handleInputChange("motherId", e.target.value.toUpperCase())}
                     />
                   </div>
 
@@ -310,7 +375,7 @@ const AddAnimal = () => {
                     <Input
                       placeholder="e.g., A-001"
                       value={formData.fatherId}
-                      onChange={(e) => handleInputChange("fatherId", e.target.value)}
+                      onChange={(e) => handleInputChange("fatherId", e.target.value.toUpperCase())}
                     />
                   </div>
 

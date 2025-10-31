@@ -18,7 +18,7 @@ const animalUpdateSchema = new mongoose.Schema({
     mediaUrl: { type: String },
 
     staffId: { 
-        type: ObjectId, 
+        type: mongoose.Schema.Types.ObjectId, 
         ref: 'newUser',
         required: true,
     },
@@ -29,6 +29,12 @@ const animalUpdateSchema = new mongoose.Schema({
         default: "Healthy"
     },
 
+    riskLevel: {
+        type: String,
+        enum: ['Low', 'Moderate', 'High'],
+        default: 'Low'
+    },
+
     vaccineName: {
         type: String,
     },
@@ -36,6 +42,40 @@ const animalUpdateSchema = new mongoose.Schema({
     diseaseName: {
         type: String,
     },
+
+    maleAnimalId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref:  "Animal",
+    },
+
+    expectedDeliveryDate: {
+        type: Date,
+    },
+
+    nextVaccineDate: {
+        type: Date,
+    },
+
+    price: {
+        type: Number,
+    },
+
+    buyerName: {
+        type: String,
+    },
+
+    buyerEmail: {
+        type: String,
+    },
+
+    buyerContact: {
+        type: Number,
+    },
+
+    buyerAddress: {
+        type: String,
+    },
+
 
 }, { timestamps: true })
 
