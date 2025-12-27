@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { getUserFarm } from "@/api/getUserFarms"
 import { registerAnimal } from "@/api/registerAnimal"
 import { getBreedData } from "@/api/getBreedData"
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { 
   Beef, 
   Heart, 
@@ -163,14 +164,21 @@ const AddAnimal = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/dashboard")}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
-          </Button>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/dashboard")}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Add New Animal</h1>
+              <p className="text-sm text-muted-foreground">
+                Enter the essential details. You'll be able to add health records, vaccinations, and updates next.
+              </p>
+            </div>
+          </div>
         </div>
       </header>
 

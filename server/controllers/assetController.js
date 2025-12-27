@@ -49,9 +49,19 @@ const getFarmData = async(req, res) => {
     }
 }
 
+const getWorkerData = async(req, res) => {
+    try{
+        const userId = req.user.id;
 
+        const workerData = await Farm.find()
+    }
+    catch(err) {
+
+    }
+}
 
 module.exports = {
     addFarmData,
-    getFarmData
+    getFarmData,
+    getWorkerData
 }

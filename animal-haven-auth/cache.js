@@ -5,6 +5,7 @@ import {
   Baby,
   Syringe,
   BadgeDollarSign,
+  Skull,
 } from "lucide-react";
 
 export const STATUS_OPTIONS = [
@@ -14,6 +15,7 @@ export const STATUS_OPTIONS = [
   { value: "Pregnant", label: "Pregnant", icon: Baby, color: "text-purple-500" },
   { value: "Vaccined", label: "Vaccined", icon: Syringe, color: "text-blue-600" },
   { value: "Sold", label: "Sold", icon: BadgeDollarSign, color: "text-gray-700" },
+  { value: "Dead", label: "Dead", icon: Skull, color: "text-gray-700" },
 ];
 
 export const API_BASE_URL = "http://localhost:8000";

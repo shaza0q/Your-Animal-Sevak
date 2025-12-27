@@ -23,10 +23,16 @@ const animalUpdateSchema = new mongoose.Schema({
         required: true,
     },
 
+    updateType: {
+        type: String,
+        enum: ['Health', 'Weight', 'Vaccination', 'Breeding', 'Sale'],
+        required: true,
+    },
+
     status: {
         type: String,
-        enum: ['Healthy', "Injured", "Diseased", "Pregnant", "Vaccined", "Sold", "FeedUpdate"],
-        default: "Healthy"
+        enum: ['Healthy', 'Injured', 'Diseased', 'Pregnant', 'Sold', 'Dead'],
+        required: true,
     },
 
     riskLevel: {

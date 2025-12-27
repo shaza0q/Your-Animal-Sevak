@@ -22,7 +22,14 @@ const salesSchema = new mongoose.Schema({
   handledBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'newUser'
-  }
+  },
+
+  farmId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Farm',
+    required: true,
+  },
+
 
 }, { timestamps: true });
 

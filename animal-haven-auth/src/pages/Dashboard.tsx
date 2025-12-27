@@ -8,6 +8,8 @@ import { LogOut, User, Mail, Phone, Shield, Plus, FileText, Bell, Users, Trendin
 import { getUserData } from "@/api/getUserData"
 import { handleLogout } from "@/api/handleLogout"
 import { getUserFarm } from "@/api/getUserFarms"
+import { getHealthData } from "@/api/getHealthData"
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +25,8 @@ const Dashboard = () => {
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
   const [farm, setFarm] = useState<any[] | null>(null)
+
+  const [healthData, setHealthData] = useState<any[] | null>(null);
 
   const abnormalAnimals = [
     { id: 1, name: "Cow #12", status: "Sick" },
@@ -40,6 +44,7 @@ const Dashboard = () => {
 
                 await getFarm();
 
+                await getHealthStatus()
 
             } catch (error) {
                 // 3. If API fails (401 due to bad cookie, network error, etc.)
@@ -65,10 +70,26 @@ const Dashboard = () => {
             } 
         };
 
+        const getHealthStatus = async() => {
+          try{
+            // console.log(farm)
+            const healthData = await getHealthData(farm)
+            setHealthData(healthData)
+          }
+          catch(err){
+            console.error("Health data not found", err)
+          }
+        }
+
+
         checkAuth();
 
    }, [navigate])
         
+
+   useEffect(() => {
+      
+   }, [])
         // Call the asynchronous check function
 
   if (!user) return null;
@@ -80,30 +101,33 @@ const Dashboard = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-primary">Animal Management System</h1>
           
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                <span className="hidden sm:inline">{user.fullName}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => handleLogout(navigate)}>
-                <LogOut className="mr-2 h-4 w-4" />
-                Sign Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  <span className="hidden sm:inline">{user.fullName}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <User className="mr-2 h-4 w-4" />
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => handleLogout(navigate)}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </header>
     
@@ -139,7 +163,7 @@ const Dashboard = () => {
                       <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
                       <span className="font-medium">Healthy</span>
                     </div>
-                    <span className="text-2xl font-bold text-green-600 dark:text-green-400">15</span>
+                    <span className="text-2xl font-bold text-green-600 dark:text-green-400">87</span>
                   </div>
                   
                   <div className="flex items-center justify-between p-4 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
@@ -269,7 +293,7 @@ const Dashboard = () => {
               )}
             </div>
           </div>
-{/* 
+          {/* 
           <div> <h3 className="text-xl font-semibold mb-4">Farms Insights</h3> <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"> <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 hover:border-primary/50" onClick={() => navigate("/FarmInsights")} > <CardHeader> <div className="flex items-start justify-between"> <div className="flex-1"> <CardTitle className="flex items-center gap-2 text-lg"> <MapPin className="h-5 w-5 text-primary" /> Farm 1 - Sunshine Valley </CardTitle> <CardDescription className="mt-2">45 animals across 4 species</CardDescription> </div> </div> </CardHeader> <CardContent className="space-y-4"> <div className="grid grid-cols-2 gap-4"> <div className="space-y-1"> <p className="text-xs text-muted-foreground">Health Score</p> <div className="flex items-center gap-2"> <p className="text-2xl font-bold">84%</p> <span className="flex items-center text-xs text-green-600"> <TrendingUp className="h-3 w-3" /> </span> </div> </div> <div className="space-y-1"> <p className="text-xs text-muted-foreground">Vaccines Due</p> <p className="text-2xl font-bold">5</p> </div> </div> <div className="pt-2 border-t"> <div className="flex items-center justify-between text-sm"> <span className="text-muted-foreground">Status:</span> <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"> Healthy </Badge> </div> </div> <Button className="w-full" variant="default"> View Farm Insights </Button> </CardContent> </Card> </div> </div> */}
 
           </CardContent>
@@ -299,7 +323,7 @@ const Dashboard = () => {
                   <Plus className="h-6 w-6" />
                   <span>Update Animal</span>
                 </Button>
-                <Button className="h-auto flex-col gap-2 py-6" variant="outline">
+                <Button className="h-auto flex-col gap-2 py-6" variant="outline" onClick = { () => navigate("/directory")}>
                   <Users className="h-6 w-6" />
                   <span>Directory</span>
                 </Button>
@@ -319,7 +343,6 @@ const Dashboard = () => {
         </div>
       </main>
     </div>
-
     
   );
 };

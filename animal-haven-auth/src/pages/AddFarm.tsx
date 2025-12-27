@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save, MapPin } from "lucide-react";
-import { addFarm } from "@/api/addAsset"
+import { addFarm } from "@/api/addAsset";
+import { ThemeToggle } from "@/components/ThemeToggle";
 const ANIMAL_TYPES = ["Cow", "Goat", "Horse", "Dog", "Sheep", "Chicken", "Other"];
 
 const AddFarm = () => {
@@ -129,19 +130,21 @@ const AddFarm = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/dashboard")}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Add New Farm</h1>
-            <p className="text-sm text-muted-foreground">
-              Register a new farm in the system
-            </p>
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/dashboard")}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold">Add New Farm</h1>
+              <p className="text-sm text-muted-foreground">
+                Register a new farm in the system
+              </p>
+            </div>
           </div>
         </div>
       </header>

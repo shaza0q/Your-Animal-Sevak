@@ -1,4 +1,5 @@
 const Animal = require('../models/animal')
+const AnimalUpdate = require('../models/animalUpdate')
 const BreedMaster = require('../models/breedMaster')
 const UpdateAnimal = require('../models/animalUpdate')
 const multer = require('multer')
@@ -79,7 +80,16 @@ const addAnimalData = async (req, res) => {
             acquisitionDate
         });
 
+        
         await animal.save();
+        
+        const animalUpdate = new AnimalUpdate({
+            animalId: animal._id,
+            weight: weight,
+            staffId: userId,
+        })
+
+        await animalUpdate.save();
 
         return res.status(201).json({ message: "Animal added successfully" });
 

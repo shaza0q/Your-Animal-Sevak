@@ -2,6 +2,10 @@
 
 ## Project info
 
+# testing
+email: mohdarslaan1207@gmail.com
+pass: 123456
+
 **URL**: https://lovable.dev/projects/5100262d-9e73-4e36-b16d-0b43817bcddd
 
 ## How can I edit this code?

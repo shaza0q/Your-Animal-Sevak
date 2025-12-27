@@ -15,6 +15,7 @@ import { Progress } from "@/components/ui/progress";
 import { getDiseaseData } from "@/api/getDiseaseData";
 import { getVaccineData } from "@/api/getVaccineData"
 import { STATUS_OPTIONS } from "../../cache"
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 
 interface Disease {
@@ -58,7 +59,7 @@ const MALE_ANIMALS = [
 
 const RISK_LEVELS = ["Low", "Moderate", "High"];
 
-const AnimalUpdate = () => {
+const AnimalUpdateForm = () => {
 
   const [diseaseData, setDiseaseData] = useState<[Disease] | null>()
   const [vaccineData, setVaccineData] = useState<[Vaccine] | null>()
@@ -879,4 +880,4 @@ const AnimalUpdate = () => {
 }
 
 
-export default AnimalUpdate
+export default AnimalUpdateForm

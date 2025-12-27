@@ -1,9 +1,10 @@
 const mongoose = require('mongoose')
 
 const FarmSchema = new mongoose.Schema({
-    userId: {
-        type: String,
-        required: true
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'newUser',
+        required: true,
     },
 
     name: {
@@ -22,7 +23,25 @@ const FarmSchema = new mongoose.Schema({
     
     capacity: {
         type: Number,
-    }
+    },
+
+    staff: [{
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'newUser',
+        },
+        role: {
+            type: String,
+            enum: ['staff', 'caretaker'],
+        },
+        joinedAt: Date,
+        }],
+
+        veterinarians: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'newUser',
+    }],
+
 
 })
 

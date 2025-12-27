@@ -23,7 +23,12 @@ const newUserSchema = new mongoose.Schema({
         type: String,
         enum: ['admin', 'staff', 'caretaker', 'veterinarian'],
         default: 'caretaker',
+    },
+    isActive: {
+        type: Boolean,
+        default: true,
     }
+
 })
 
 

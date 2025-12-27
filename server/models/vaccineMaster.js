@@ -13,5 +13,6 @@ const vaccineMasterSchema = mongoose.Schema({
 
 })
 
+vaccineMasterSchema.index({ animalType: 1, vaccineName: 1 }, { unique: true });
 
 module.exports = mongoose.model('VaccineMaster', vaccineMasterSchema)

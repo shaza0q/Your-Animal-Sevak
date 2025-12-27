@@ -1,0 +1,17 @@
+export enum AnimalType {
+  COW = 'Cow',
+  BUFFALO = 'Buffalo',
+  GOAT = 'Goat',
+  SHEEP = 'Sheep',
+  CHICKEN = 'Chicken',
+  DUCK = 'Duck',
+  RABBIT = 'Rabbit',
+  DOG = 'Dog',
+  CAT = 'Cat',
+  CAMEL = 'Camel',
+  DONKEY = 'Donkey',
+  HORSE = 'Horse',
+  PIGEON = 'Pigeon',
+  TURKEY = 'Turkey',
+  OTHER = 'Other',
+}

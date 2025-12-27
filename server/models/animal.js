@@ -63,11 +63,15 @@ const animalSchema = new mongoose.Schema({
     default: 'Active',
   },
 
+  caretakers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'newUser'
+  }],
 
 }, { timestamps: true });
 
 
-animalSchema.index({tagNumber: 1}, {uniique: true});
+animalSchema.index({tagNumber: 1}, {unique: true});
 animalSchema.index({type: 1})
 animalSchema.index({feedType: 1})
 animalSchema.index({farmId: 1})
