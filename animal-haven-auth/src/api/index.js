@@ -1,1 +1,6 @@
 export * from './getUserData'
+export * from './addAsset'
+export * from './cloudinary'
+export * from './updateAnimalData'
+export * from './getVaccineData'
+export * from './getDiseaseData'

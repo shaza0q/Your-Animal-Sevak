@@ -4802,3 +4802,109 @@
 1766865150076 : GET : /master/getDiseaseData
 
 1766865150077 : GET : /master/getVaccineData
+
+1767112426313 : POST : /auth/signin
+
+1767112469631 : POST : /auth/signin
+
+1767112469838 : POST : /user/getUserData
+
+1767112469860 : GET : /asset/getFarm
+
+1767112469881 : POST : /stat/getHealthData
+
+1767112478781 : POST : /user/getUserData
+
+1767112572565 : POST : /user/getUserData
+
+1767112572578 : GET : /asset/getFarm
+
+1767112572595 : POST : /stat/getHealthData
+
+1767112596521 : POST : /user/getUserData
+
+1767112597792 : POST : /user/getUserData
+
+1767112597808 : GET : /asset/getFarm
+
+1767112597820 : POST : /stat/getHealthData
+
+1767112599572 : GET : /master/getDiseaseData
+
+1767112599575 : GET : /master/getVaccineData
+
+1767112996447 : GET : /master/getDiseaseData
+
+1767112996448 : GET : /master/getVaccineData
+
+1767113113235 : GET : /master/getDiseaseData
+
+1767113113236 : GET : /master/getVaccineData
+
+1767113114211 : GET : /master/getDiseaseData
+
+1767113114213 : GET : /master/getVaccineData
+
+1767113126224 : GET : /master/getDiseaseData
+
+1767113126225 : GET : /master/getVaccineData
+
+1767113127221 : GET : /master/getDiseaseData
+
+1767113127221 : GET : /master/getVaccineData
+
+1767113131207 : GET : /master/getDiseaseData
+
+1767113131207 : GET : /master/getVaccineData
+
+1767113133206 : GET : /master/getDiseaseData
+
+1767113133207 : GET : /master/getVaccineData
+
+1767113145224 : GET : /master/getDiseaseData
+
+1767113145224 : GET : /master/getVaccineData
+
+1767113146204 : GET : /master/getDiseaseData
+
+1767113146204 : GET : /master/getVaccineData
+
+1767113253219 : GET : /master/getVaccineData
+
+1767113253220 : GET : /master/getDiseaseData
+
+1767113262224 : GET : /master/getDiseaseData
+
+1767113262224 : GET : /master/getVaccineData
+
+1767113305211 : GET : /master/getDiseaseData
+
+1767113305211 : GET : /master/getVaccineData
+
+1767114099319 : GET : /master/getDiseaseData
+
+1767114099321 : GET : /master/getVaccineData
+
+1767114110716 : POST : /animal/updateAnimalData
+
+1767114745207 : POST : /animal/updateAnimalData
+
+1767115058753 : POST : /animal/updateAnimalData
+
+1767115427793 : POST : /animal/updateAnimalData
+
+1767115522995 : POST : /animal/updateAnimalData
+
+1767115747121 : POST : /animal/updateAnimalData
+
+1767115925574 : POST : /animal/updateAnimalData
+
+1767115971359 : POST : /animal/updateAnimalData
+
+1767115992142 : POST : /animal/updateAnimalData
+
+1767117164848 : POST : /user/getUserData
+
+1767117164936 : GET : /asset/getFarm
+
+1767117164978 : POST : /stat/getHealthData

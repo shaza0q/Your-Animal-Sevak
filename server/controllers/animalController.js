@@ -64,7 +64,7 @@ const addAnimalData = async (req, res) => {
             fatherRef = father._id;
         }
 
-        // ✅ Create new animal with ObjectId references
+        // Create new animal with ObjectId references
         const animal = new Animal({
             tagNumber,
             name,
@@ -99,85 +99,189 @@ const addAnimalData = async (req, res) => {
     }
 };
 
-const updateAnimalData = async(req, res) => {
-    try {
+const updateAnimalData = async (req, res) => {
+  try {
+    const userId = req.user.id;
 
-        let imageUrl = null;
-        const userId = req.user.id
+    const {
+      animalId,           // tag number from frontend
+      date,
+      updateType,
+      status: incomingStatus, // ONLY allowed for Health
+      weight,
+      notes,
+      riskLevel,
+      vaccineName,
+      diseaseName,
+      maleAnimalId,
+      expectedDeliveryDate,
+      nextVaccineDate,
+      price,
+      buyerName,
+      buyerEmail,
+      buyerContact,
+      buyerAddress,
+    } = req.body;
 
-        const {
-            animalId,
-            date,
-            weight,
-            notes,
-            status,
-            riskLevel,
-            vaccineName,
-            diseaseName,
-            maleAnimalId,
-            expectedDeliveryDate,
-            nextVaccineDate,
-            price,
-            buyerName,
-            buyerEmail,
-            buyerContact,
-            buyerAddress,
-            } = req.body;
+    console.log("Received request body:", req.body);
 
-        
-        // console.log(tagNumber)
-
-        const animalData = await Animal.findOne({tagNumber: animalId})
-        
-        if(!animalData){
-            return res.status(404).json({message: "Animal TagNumber not found"});
-        }
-
-        const updateData = {};
-
-        // Loop through each key dynamically to avoid manual repetition
-        for (const [key, value] of Object.entries(req.body)) {
-            if (
-                value !== undefined && 
-                value !== null && 
-                value !== '' // ignore empty strings
-            ) {
-                updateData[key] = value;
-            }
-        }
-
-        
-        updateData.staffId = userId
-        updateData.animalId = animalData._id;
-
-        if(req.file){
-            const filePath = req.file.path;
+    /* ─────────────────────────────
+       1️⃣ Find animal by tag number or ObjectId
+    ───────────────────────────── */
+    let animalData;
     
-            const result = await cloudinary.uploader.upload(filePath, {
-                folder: "animalPhotos", // optional folder name
-            });
+    // Try to find by tag number first (most common case)
+    animalData = await Animal.findOne({ tagNumber: animalId });
+    
+    // If not found and animalId looks like ObjectId, try by _id
+    if (!animalData && /^[0-9a-fA-F]{24}$/.test(animalId)) {
+      animalData = await Animal.findById(animalId);
+    }
+    
+    if (!animalData) {
+      return res.status(404).json({ message: "Animal not found" });
+    }
 
-            imageUrl = result.secure_url
+    console.log("---------------------1");
+    /* ─────────────────────────────
+       2️⃣ Block terminal animals
+    ───────────────────────────── */
+    if (["Sold", "Deceased"].includes(animalData.status)) {
+      return res.status(400).json({
+        message: `Cannot update a ${animalData.status} animal`,
+      });
+    }
 
-            updateData.mediaUrl = imageUrl
-            
-            fs.unlinkSync(filePath)
+
+    /* ─────────────────────────────
+       3️⃣ Fetch last update (for inheritance)
+    ───────────────────────────── */
+    const lastUpdate = await UpdateAnimal
+      .findOne({ animalId: animalData._id })
+      .sort({ createdAt: -1 });
+
+    const lastStatus = lastUpdate?.status || "Healthy";
+
+    /* ─────────────────────────────
+       4️⃣ Derive final status
+    ───────────────────────────── */
+    let finalStatus;
+
+    switch (updateType) {
+      case "Health":
+        if (!incomingStatus) {
+          return res.status(400).json({
+            message: "Status is required for Health update",
+          });
         }
+        finalStatus = incomingStatus;
+        break;
 
+      case "Weight":
+      case "Vaccination":
+        finalStatus = lastStatus; // inherit
+        break;
 
-        console.log(updateData);
+      case "Breeding":
+        finalStatus = "Pregnant";
+        break;
 
-        const animalUpdate = new UpdateAnimal(updateData)
-        await animalUpdate.save()
+      case "Sale":
+        finalStatus = "Sold";
+        break;
 
-        return res.status(201).json({message: "Animal update recorded successfully", data: animalData})
-
+      default:
+        return res.status(400).json({ message: "Invalid updateType" });
     }
-    catch(err){
-        console.error("Error updating animal", err);
-        return res.status(500).json({ message: "Internal server error" });
+
+    /* ─────────────────────────────
+       5️⃣ Build update payload (clean)
+    ───────────────────────────── */
+    const updateData = {
+      animalId: animalData._id,
+      staffId: userId,
+      date,
+      updateType,
+      status: finalStatus,
+
+      weight,
+      notes,
+      riskLevel,
+      vaccineName,
+      diseaseName,
+      maleAnimalId,
+      expectedDeliveryDate,
+      nextVaccineDate,
+      price,
+      buyerName,
+      buyerEmail,
+      buyerContact,
+      buyerAddress,
+    };
+
+    // Remove undefined / empty fields
+    Object.keys(updateData).forEach((key) => {
+      if (updateData[key] === undefined || updateData[key] === "") {
+        delete updateData[key];
+      }
+    });
+
+    
+    console.log("---------------------2");
+    /* ─────────────────────────────
+       6️⃣ Image upload (optional)
+    ───────────────────────────── */
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "animalPhotos",
+      });
+
+      updateData.mediaUrl = result.secure_url;
+      fs.unlinkSync(req.file.path);
     }
-}
+
+    
+    console.log("Update data:", updateData);
+    console.log("---------------------3");
+    /* ─────────────────────────────
+       7️⃣ Save update event
+    ───────────────────────────── */
+    const animalUpdate = await AnimalUpdate.create(updateData);
+    
+    console.log("Created update:", animalUpdate);
+
+    
+    console.log("---------------------4");
+    /* ─────────────────────────────
+       8️⃣ Sync animal lifecycle snapshot
+    ───────────────────────────── */
+    if (updateType === "Sale") {
+      animalData.status = "Sold";
+      await animalData.save();
+    }
+
+    
+    console.log("---------------------5");
+    if (updateType === "Health" && finalStatus === "Dead") {
+      animalData.status = "Deceased";
+      await animalData.save();
+    }
+
+    /* ─────────────────────────────
+       9️⃣ Response
+    ───────────────────────────── */
+    return res.status(201).json({
+      message: "Animal update recorded successfully",
+      data: animalUpdate,
+    });
+
+  } catch (err) {
+    console.error("Error updating animal", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
 
 module.exports = {
     addAnimalData,

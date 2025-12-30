@@ -28,8 +28,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { getDiseaseData } from "../api/getDiseaseData"
-import { getVaccineData } from "../api/getVaccineData"
+import { updateAnimalData, getVaccineData, getDiseaseData } from "@/api"
 
 // Types
 type UpdateType = "Health" | "Weight" | "Vaccination" | "Breeding" | "Sale";
@@ -566,6 +565,8 @@ const AnimalUpdate = () => {
 
     try {
       // Simulate upload progress
+      const response = await updateAnimalData(formData, setUploadProgress);
+
       const progressInterval = setInterval(() => {
         setUploadProgress((prev) => {
           if (prev >= 90) {

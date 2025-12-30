@@ -273,9 +273,6 @@ const AnimalUpdateForm = () => {
       console.log(uploadProgress, "%")
 
       console.log(response)
-      
-      // console.log("Form submitted:", formData);
-
 
        toast({
         title: "Update logged successfully!",
