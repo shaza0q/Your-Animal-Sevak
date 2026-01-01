@@ -205,6 +205,7 @@ const SignUp = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="owner">Farm Owner</SelectItem>
                   <SelectItem value="veterinarian">Veterinarian</SelectItem>
                   <SelectItem value="staff">Staff</SelectItem>
                   <SelectItem value="caretaker">Caretaker</SelectItem>

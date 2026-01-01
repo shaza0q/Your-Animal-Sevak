@@ -24,9 +24,11 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from "recharts";
+import FarmStaffSection from "@/components/FarmStaffSection";
 
 const FarmInsights = () => {
-  const farm = useParams()
+  const { id: farmId } = useParams<{ id: string }>();
+
   // console.log(farm)
   const navigate = useNavigate();
   // const [farmData, setFarmData] = useState()
@@ -227,6 +229,12 @@ const FarmInsights = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* farm staff & veterinarians */}
+        <FarmStaffSection
+         farmId={farmId}
+         isOwner={true} 
+        />
 
         {/* Health Alerts */}
         <Card>
@@ -477,7 +485,7 @@ const FarmInsights = () => {
             </CardHeader>
 
             <CardContent className="grid grid-cols-2 gap-3">
-              <Button className="h-auto flex-col gap-2 py-6" variant="default" onClick = { () => navigate("/addAnimal", { state: { farmId: farm.id } })}>
+              <Button className="h-auto flex-col gap-2 py-6" variant="default" onClick = { () => navigate("/addAnimal", { state: { farmId: farmId } })}>
                 <Plus className="h-6 w-6" />
                 <span>Add Animal</span>
               </Button>

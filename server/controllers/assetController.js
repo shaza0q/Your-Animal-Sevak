@@ -11,7 +11,7 @@ const addFarmData = async(req, res) => {
         // console.log("7 from assetController", userId)
         
         const farm = new Farm({
-            userId,
+            owner: userId,
             name,
             animalTypes,
             location,
@@ -36,7 +36,7 @@ const getFarmData = async(req, res) => {
         const userId = req.user.id;
 
         const farmData = await Farm.find(
-            {userId: userId}
+            {owner: userId}
         )
 
         return res.status(200).json({
