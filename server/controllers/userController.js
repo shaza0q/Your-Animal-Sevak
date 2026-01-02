@@ -1,3 +1,4 @@
+const farmUser = require('../models/farmUser');
 const newUser = require('../models/newUsers')
 
 const getUserById = async(req,res)=>{
@@ -17,7 +18,7 @@ const searchUsers = async (req, res) => {
     }
 
     // 1️⃣ Find matching users
-    const users = await User.find({
+    const users = await newUser.find({
       $or: [
         { email: { $regex: query, $options: 'i' } },
         { full_name: { $regex: query, $options: 'i' } },
@@ -32,7 +33,7 @@ const searchUsers = async (req, res) => {
     let filteredUsers = users;
 
     if (farmId) {
-      const assignedUsers = await FarmUser.find({
+      const assignedUsers = await farmUser.find({
         farmId,
         isActive: true,
         role: { $nin: ['owner', 'admin'] }

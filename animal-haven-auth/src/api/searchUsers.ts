@@ -10,7 +10,7 @@ export const searchUsers = async ({
 }) => {
   try {
     const response = await axios.get(
-      `${API_BASE_URL}/users/search`,
+      `${API_BASE_URL}/user/search`,
       {
         params: { query, farmId },
         withCredentials: true,

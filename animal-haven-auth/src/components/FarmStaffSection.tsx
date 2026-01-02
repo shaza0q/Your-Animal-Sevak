@@ -40,6 +40,7 @@ import { getFarmUsers } from "@/api/getFarmUsers";
 import { assignFarmUser } from "@/api/assignFarmUser";
 import { removeFarmUser } from "@/api/removeFarmUser";
 import { searchUsers } from "@/api/searchUsers";
+import { updateFarmUserRole } from "@/api/updateUserFarmRole";
 
 console.log("FarmStaffSection: Module loaded!");
 
@@ -58,6 +59,7 @@ interface SearchUser {
   id: string;
   name: string;
   email: string;
+  role: string;
 }
 
 // Mock data for assigned staff
@@ -86,13 +88,13 @@ const mockAssignedStaff: FarmUser[] = [
 ];
 
 // Mock data for user search
-const mockAllUsers: SearchUser[] = [
-  { id: "4", name: "Emily Davis", email: "emily.d@farm.com" },
-  { id: "5", name: "Robert Wilson", email: "robert.w@farm.com" },
-  { id: "6", name: "Lisa Anderson", email: "lisa.a@farm.com" },
-  { id: "7", name: "David Martinez", email: "david.m@farm.com" },
-  { id: "8", name: "Jennifer Taylor", email: "jen.t@farm.com" },
-];
+// const mockAllUsers: SearchUser[] = [
+//   { id: "4", name: "Emily Davis", email: "emily.d@farm.com" },
+//   { id: "5", name: "Robert Wilson", email: "robert.w@farm.com" },
+//   { id: "6", name: "Lisa Anderson", email: "lisa.a@farm.com" },
+//   { id: "7", name: "David Martinez", email: "david.m@farm.com" },
+//   { id: "8", name: "Jennifer Taylor", email: "jen.t@farm.com" },
+// ];
 
 interface FarmStaffSectionProps {
   farmId: string;
@@ -101,8 +103,7 @@ interface FarmStaffSectionProps {
 
 const FarmStaffSection = ({ farmId, isOwner = true }: FarmStaffSectionProps) => {
   console.log("FarmStaffSection: Component rendering with farmId:", farmId);
-  
-  try {
+
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [assignedStaff, setAssignedStaff] = useState<FarmUser[]>([]);
@@ -184,17 +185,17 @@ const FarmStaffSection = ({ farmId, isOwner = true }: FarmStaffSectionProps) => 
       setAssignedStaff((prev) => [
         ...prev,
         {
-          id: createdAssignment.userId._id,
-          name: createdAssignment.userId.name,
-          email: createdAssignment.userId.email,
+          id: createdAssignment.id,
+          name: createdAssignment.name,
+          email: createdAssignment.email,
           role: createdAssignment.role,
-          assignedDate: createdAssignment.createdAt,
+          assignedDate: createdAssignment.assignedDate,
         },
       ]);
 
       toast({
         title: "User Assigned",
-        description: `${createdAssignment.userId.name} assigned as ${role}`,
+        description: `${createdAssignment.name} assigned as ${role}`,
       });
 
       setIsModalOpen(false);
@@ -429,22 +430,11 @@ const FarmStaffSection = ({ farmId, isOwner = true }: FarmStaffSectionProps) => 
                       <p className="text-xs text-muted-foreground truncate">
                         {user.email}
                       </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {user.role}
+                      </p>
                     </div>
-                    <Select
-                      value={selectedRoles[user.id] || "Staff"}
-                      onValueChange={(value: UserRole) =>
-                        setSelectedRoles((prev) => ({ ...prev, [user.id]: value }))
-                      }
-                    >
-                      <SelectTrigger className="w-28 h-8 text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Staff">Staff</SelectItem>
-                        <SelectItem value="Caretaker">Caretaker</SelectItem>
-                        <SelectItem value="Veterinarian">Veterinarian</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    
                     <Button
                       size="sm"
                       disabled={assigningUserId === user.id}
@@ -495,18 +485,7 @@ const FarmStaffSection = ({ farmId, isOwner = true }: FarmStaffSectionProps) => 
       </AlertDialog>
     </TooltipProvider>
   );
-  } catch (error) {
-    console.error("FarmStaffSection: Error rendering component:", error);
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center text-red-500">
-            <p>Error loading farm staff section</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+ 
 };
 
 export default FarmStaffSection;

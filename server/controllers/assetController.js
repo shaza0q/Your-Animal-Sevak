@@ -1,4 +1,5 @@
 const Farm = require('../models/farm')
+const FarmUser = require('../models/farmUser')
 
 const addFarmData = async(req, res) => {
     
@@ -19,6 +20,15 @@ const addFarmData = async(req, res) => {
         })
 
         await farm.save()
+
+        // Also add owner to FarmUser collection for access control
+        await FarmUser.create({
+            farmId: farm._id,
+            userId: userId,
+            role: 'owner',
+            isActive: true,
+            createdBy: userId
+        })
 
         return res.status(200).json({message: 'Farm added successfully'})
     }

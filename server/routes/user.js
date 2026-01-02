@@ -1,12 +1,16 @@
 const express = require('express')
 const router = express.Router()
 const { protect } = require('../middlewares/auth')
-const { getUserById } = require('../controllers/userController')
+const { getUserById, searchUsers } = require('../controllers/userController')
 
 
 router.post('/getUserData', protect, getUserById)
 
-r
+router.get(
+  '/search',
+  protect,
+  searchUsers
+);
 
 
 module.exports = router

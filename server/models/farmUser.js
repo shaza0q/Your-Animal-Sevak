@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 const farmUserSchema = new mongoose.Schema(
   {
     farmId: {
