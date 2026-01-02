@@ -567,6 +567,8 @@ const AnimalUpdate = () => {
       // Simulate upload progress
       const response = await updateAnimalData(formData, setUploadProgress);
 
+      console.log("-----------------------", response);
+
       const progressInterval = setInterval(() => {
         setUploadProgress((prev) => {
           if (prev >= 90) {

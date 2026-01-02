@@ -282,7 +282,6 @@ const updateAnimalData = async (req, res) => {
 };
 
 
-
 module.exports = {
     addAnimalData,
     updateAnimalData,

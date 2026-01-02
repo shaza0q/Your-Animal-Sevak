@@ -25,24 +25,15 @@ const FarmSchema = new mongoose.Schema({
         type: Number,
     },
 
-    staff: [{
-        user: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'newUser',
-        },
-        role: {
-            type: String,
-            enum: ['staff', 'caretaker'],
-        },
-        joinedAt: Date,
-        }],
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
 
-        veterinarians: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'newUser',
-    }],
-
-
+    updatedAt: {
+        type: Date,
+        default: Date.now,
+    },
 })
 
 module.exports = mongoose.model("Farm", FarmSchema)

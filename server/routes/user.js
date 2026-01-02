@@ -6,7 +6,7 @@ const { getUserById } = require('../controllers/userController')
 
 router.post('/getUserData', protect, getUserById)
 
-
+r
 
 
 module.exports = router
