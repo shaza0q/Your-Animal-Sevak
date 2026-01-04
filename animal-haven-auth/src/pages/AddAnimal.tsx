@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { getUserFarm } from "@/api/getUserFarms"
+import { getAllFarmData } from "@/api/getAllFarmData"
 import { registerAnimal } from "@/api/registerAnimal"
 import { getBreedData } from "@/api/getBreedData"
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -55,7 +55,7 @@ const AddAnimal = () => {
   useEffect(() => {
     const getFarms = async() => {
       try{
-        const response = await getUserFarm();
+        const response = await getAllFarmData();
     
         setFarmData(response);
 

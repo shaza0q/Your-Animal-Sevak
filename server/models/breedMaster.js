@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const breedMasterSchema = mongoose.Schema({
+const breedMasterSchema = new mongoose.Schema({
     breedName: {
         type: String,
         required: true,

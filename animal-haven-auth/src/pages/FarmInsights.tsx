@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import {
   Syringe,
   AlertTriangle,
   Activity,
+  PawPrint,
   PieChart as PieChartIcon,
   BarChart3
 } from "lucide-react";
@@ -25,27 +26,78 @@ import {
 } from "@/components/ui/chart";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from "recharts";
 import FarmStaffSection from "@/components/FarmStaffSection";
+import { getFarmData } from "@/api/getFarmData";
+import { FarmSummaryDto } from "@/interface/farm.interface";
 
 const FarmInsights = () => {
   const { id: farmId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [farmData, setFarmData] = useState<FarmSummaryDto | null>(null);
+  const [loadingFarm, setLoadingFarm] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!farmId) return;
+
+    const fetchFarm = async () => {
+      try {
+        setLoadingFarm(true);
+        setError(null);
+        const data = await getFarmData(farmId);
+        setFarmData(data);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load farm data");
+      } finally {
+        setLoadingFarm(false);
+      }
+    };
+
+    fetchFarm();
+  }, [farmId]);
+
+  if (loadingFarm) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading farm data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !farmData) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Error Loading Farm</h2>
+          <p className="text-muted-foreground mb-4">{error || "Farm data not available"}</p>
+          <Button onClick={() => navigate("/dashboard")}>
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
 
   // console.log(farm)
-  const navigate = useNavigate();
   // const [farmData, setFarmData] = useState()
   // Mock data - in real app, this would come from API
-  const farmData = {
-    name: "Farm 1 - Sunshine Valley",
-    totalAnimals: 45,
-    species: 4,
-    healthyAnimals: 38,
-    upcomingVaccines: 5,
-    sickAnimals: 2,
-    weeklyChange: {
-      healthy: 2,
-      vaccines: -1,
-      sick: -1
-    }
-  };
+  // const farmData = {
+  //   name: "Farm 1 - Sunshine Valley",
+  //   totalAnimals: 45,
+  //   species: 4,
+  //   healthyAnimals: 38,
+  //   upcomingVaccines: 5,
+  //   sickAnimals: 2,
+  //   weeklyChange: {
+  //     healthy: 2,
+  //     vaccines: -1,
+  //     sick: -1
+  //   }
+  // };
 
   const healthAlerts = [
     {
@@ -146,19 +198,30 @@ const FarmInsights = () => {
         {/* Farm Overview */}
         <Card className="border-2">
           <CardHeader>
-            <CardTitle className="text-xl">🌿 {farmData.name}</CardTitle>
-            <CardDescription>Your animals are healthy and thriving</CardDescription>
+             <div className="flex items-start justify-between">
+              <div>
+                <CardTitle className="text-xl">🌿 {farmData.name}</CardTitle>
+                <CardDescription>Your animals are healthy and thriving</CardDescription>
+              </div>
+              <Button 
+                onClick={() => navigate(`/farms/${farmData.id}/animals`)}
+                className="gap-2"
+              >
+                <PawPrint className="h-4 w-4" />
+                View Animals
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Total Animals</span>
-                  <Badge variant="secondary" className="text-lg font-bold">{farmData.totalAnimals}</Badge>
+                  <Badge variant="secondary" className="text-lg font-bold">will add this</Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Species Types</span>
-                  <Badge variant="secondary">{farmData.species} types</Badge>
+                  <Badge variant="secondary">{farmData.animalTypes.length} types</Badge>
                 </div>
               </div>
 
@@ -169,11 +232,11 @@ const FarmInsights = () => {
                     <span className="text-sm">Healthy Animals</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold">{farmData.healthyAnimals}</span>
-                    {farmData.weeklyChange.healthy > 0 && (
+                    <span className="font-semibold">will add this</span>
+                    {1 > 0 && (
                       <span className="flex items-center text-xs text-green-600">
                         <TrendingUp className="h-3 w-3" />
-                        {farmData.weeklyChange.healthy}
+                        will add this
                       </span>
                     )}
                   </div>
@@ -184,11 +247,11 @@ const FarmInsights = () => {
                     <span className="text-sm">Upcoming Vaccines</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold">{farmData.upcomingVaccines}</span>
-                    {farmData.weeklyChange.vaccines < 0 && (
+                    <span className="font-semibold">will add this</span>
+                    {1 < 0 && (
                       <span className="flex items-center text-xs text-green-600">
                         <TrendingDown className="h-3 w-3" />
-                        {Math.abs(farmData.weeklyChange.vaccines)}
+                        {Math.abs(2)}
                       </span>
                     )}
                   </div>
@@ -199,11 +262,11 @@ const FarmInsights = () => {
                     <span className="text-sm">Sick Animals</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold">{farmData.sickAnimals}</span>
-                    {farmData.weeklyChange.sick < 0 && (
+                    <span className="font-semibold">will add this</span>
+                    {1 < 0 && (
                       <span className="flex items-center text-xs text-green-600">
                         <TrendingDown className="h-3 w-3" />
-                        {Math.abs(farmData.weeklyChange.sick)}
+                        {Math.abs(2)}
                       </span>
                     )}
                   </div>

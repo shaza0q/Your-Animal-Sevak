@@ -7,8 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import { LogOut, User, Mail, Phone, Shield, Plus, FileText, Bell, Users, TrendingUp, MapPin, AlertTriangle, Heart, CheckCircle2, Activity } from "lucide-react";
 import { getUserData } from "@/api/getUserData"
 import { handleLogout } from "@/api/handleLogout"
-import { getUserFarm } from "@/api/getUserFarms"
 import { getHealthData } from "@/api/getHealthData"
+import { getAllFarmData } from "@/api/getAllFarmData"
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   DropdownMenu,
@@ -58,8 +58,8 @@ const Dashboard = () => {
         const getFarm = async () => {
             try {
                 // 1. AWAIT the API call to get the resolved user data
-                const farmData = await getUserFarm(); 
-                // console.log(farmData)
+                const farmData = await getAllFarmData(); 
+                console.log("-------dashboard farm insight",farmData)
                 // 2. Set the state with the actual data
                 setFarm(farmData); 
 

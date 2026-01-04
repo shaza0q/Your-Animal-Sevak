@@ -11,3 +11,11 @@ export interface Farm {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface FarmSummaryDto {
+  id: string;
+  name: string;
+  location?: string;
+  animalTypes: string[];
+  capacity?: number;
+}

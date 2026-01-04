@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const diseaseMasterSchema = mongoose.Schema({
+const diseaseMasterSchema = new mongoose.Schema({
 
     animalType: {
         type: String,

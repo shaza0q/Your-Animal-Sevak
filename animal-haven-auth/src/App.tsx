@@ -16,6 +16,9 @@ import FarmInsights from "./pages/FarmInsights";
 import AnimalUpdate from "./pages/AnimalUpdate";
 import Directory from "./pages/Directory";
 import FarmAnimals from "./pages/FarmAnimals";
+import AnimalsOverview from "./pages/AnimalsOverview";
+import AnimalDetail from "./pages/AnimalDetail";
+import AnimalsByCategory from "./pages/AnimalsByCategory";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +41,9 @@ const App = () => (
             <Route path="/animalUpdate" element={<AnimalUpdate/>} />
             <Route path="/directory" element={<Directory />} />
             <Route path="/farmAnimals" element={<FarmAnimals />} />
+            <Route path="/farms/:farmId/animals" element={<AnimalsOverview />} />
+            <Route path="/farms/:farmId/animals/type/:animalType" element={<AnimalsByCategory />} />
+            <Route path="/farms/:farmId/animals/:animalId" element={<AnimalDetail />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -424,7 +424,7 @@ const Directory = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => navigate(`/farm/${farm.farmId}/animals`)}
+                        onClick={() => navigate(`/farms/${farm.farmId}/animals`)}
                       >
                         View All
                       </Button>

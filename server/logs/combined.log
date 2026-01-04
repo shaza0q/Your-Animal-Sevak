@@ -225,3 +225,71 @@
 {"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-02T19:19:24.254Z"}
 {"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-02T19:19:32.187Z"}
 {"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-02T19:19:32.190Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T10:47:56.198Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T10:47:56.354Z"}
+{"level":"info","message":"=== GETTING FARM USERS for farm: 6958075f21f294db2214fba0 ===","service":"animal-management","timestamp":"2026-01-03T10:47:56.355Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T16:26:29.322Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T16:26:29.348Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T16:26:34.862Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T16:26:34.868Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T16:26:38.291Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T16:26:38.296Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T16:26:41.631Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T16:26:41.634Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T16:26:50.307Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T16:26:50.310Z"}
+{"level":"info","message":"Checking access for user 68dfa9d48f09d5a7de736a44 to farm undefined","service":"animal-management","timestamp":"2026-01-03T18:24:51.117Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm getAllFarms","service":"animal-management","timestamp":"2026-01-03T18:50:53.764Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm getAllFarms","service":"animal-management","timestamp":"2026-01-03T18:51:40.510Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T19:01:05.368Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T19:01:05.509Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T19:01:36.124Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T19:01:36.132Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T19:01:36.250Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T19:01:36.264Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T19:02:32.947Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T19:02:32.954Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T19:02:33.004Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T19:02:33.011Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T19:06:16.091Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T19:06:16.115Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T19:06:16.157Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T19:06:16.161Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T19:06:32.586Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T19:06:32.596Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T19:06:34.645Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-03T19:06:34.650Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:29:22.097Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:29:22.115Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:29:22.146Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:29:22.149Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:34:52.260Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:34:52.264Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:34:52.286Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:34:52.288Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:36:07.090Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:36:07.096Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:36:07.113Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:36:07.116Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:56:27.526Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:56:27.562Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:57:29.885Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:57:29.888Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:57:36.954Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:57:36.960Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:57:55.156Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:57:55.158Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:58:07.559Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:58:07.562Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:58:10.237Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:58:10.239Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:58:14.400Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:58:14.402Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:58:35.864Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:58:35.866Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:59:25.836Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:59:25.840Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:59:44.294Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:59:44.297Z"}
+{"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:59:44.320Z"}
+{"level":"info","message":"User 6958074621f294db2214fb9c has access to farm 6958075f21f294db2214fba0","service":"animal-management","timestamp":"2026-01-04T18:59:44.323Z"}

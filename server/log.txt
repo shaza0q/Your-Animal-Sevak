@@ -5380,3 +5380,573 @@
 1767381570693 : GET : /user/search
 
 1767381572185 : POST : /farms/6958075f21f294db2214fba0/users
+
+1767437259496 : POST : /user/getUserData
+
+1767437259621 : GET : /asset/getFarm
+
+1767437259667 : POST : /stat/getHealthData
+
+1767437264634 : POST : /user/getUserData
+
+1767437264652 : GET : /asset/getFarm
+
+1767437264676 : POST : /stat/getHealthData
+
+1767437276193 : GET : /farms/6958075f21f294db2214fba0/users
+
+1767437631489 : POST : /user/getUserData
+
+1767437631508 : GET : /asset/getFarm
+
+1767437631531 : POST : /stat/getHealthData
+
+1767437636914 : POST : /user/getUserData
+
+1767437661743 : POST : /user/getUserData
+
+1767437685420 : POST : /user/getUserData
+
+1767437685430 : GET : /asset/getFarm
+
+1767437685446 : POST : /stat/getHealthData
+
+1767441611918 : POST : /user/getUserData
+
+1767441612024 : GET : /asset/getFarm
+
+1767441612054 : POST : /stat/getHealthData
+
+1767442349545 : POST : /user/getUserData
+
+1767442349617 : GET : /asset/getFarm
+
+1767442349646 : POST : /stat/getHealthData
+
+1767457586148 : POST : /user/getUserData
+
+1767457586192 : GET : /asset/getFarm
+
+1767457586210 : POST : /stat/getHealthData
+
+1767457589318 : GET : /farms/6958075f21f294db2214fba0/users
+
+1767457594860 : DELETE : /farms/6958075f21f294db2214fba0/users/68e1743f433e2ac385e6815f
+
+1767457598289 : DELETE : /farms/6958075f21f294db2214fba0/users/68dfabd702220825c3c43638
+
+1767457601629 : DELETE : /farms/6958075f21f294db2214fba0/users/68e1324564800d483d8d3bcb
+
+1767457608666 : GET : /user/search
+
+1767457610305 : POST : /farms/6958075f21f294db2214fba0/users
+
+1767457909556 : POST : /stat/getHealthData
+
+1767463121984 : POST : /auth/signin
+
+1767463122231 : POST : /user/getUserData
+
+1767463122247 : GET : /asset/getFarm
+
+1767463122284 : POST : /stat/getHealthData
+
+1767463137410 : POST : /user/getUserData
+
+1767463137427 : GET : /asset/getFarm
+
+1767463137446 : POST : /stat/getHealthData
+
+1767463170758 : POST : /user/getUserData
+
+1767463170773 : GET : /asset/getFarm
+
+1767463170798 : POST : /stat/getHealthData
+
+1767463644830 : POST : /stat/getHealthData
+
+1767463650009 : POST : /user/getUserData
+
+1767463650028 : GET : /asset/getFarm
+
+1767463650044 : POST : /stat/getHealthData
+
+1767463732964 : POST : /user/getUserData
+
+1767463752696 : POST : /auth/signin
+
+1767463752831 : POST : /user/getUserData
+
+1767463752841 : GET : /asset/getFarm
+
+1767463752858 : POST : /stat/getHealthData
+
+1767463803027 : POST : /stat/getHealthData
+
+1767463803028 : POST : /stat/getHealthData
+
+1767463930549 : POST : /user/getUserData
+
+1767463930588 : GET : /asset/getFarm
+
+1767463930618 : POST : /stat/getHealthData
+
+1767464068432 : POST : /user/getUserData
+
+1767464068449 : GET : /asset/getFarm
+
+1767464068471 : POST : /stat/getHealthData
+
+1767464087357 : POST : /user/getUserData
+
+1767464087371 : GET : /asset/getFarm
+
+1767464087388 : POST : /stat/getHealthData
+
+1767464092284 : POST : /user/getUserData
+
+1767464092294 : GET : /asset/getFarm
+
+1767464092305 : POST : /stat/getHealthData
+
+1767464109358 : POST : /user/getUserData
+
+1767464109379 : GET : /asset/getFarm
+
+1767464109405 : POST : /stat/getHealthData
+
+1767464113348 : POST : /user/getUserData
+
+1767464113362 : GET : /asset/getFarm
+
+1767464113383 : POST : /stat/getHealthData
+
+1767464117285 : POST : /user/getUserData
+
+1767464117295 : GET : /asset/getFarm
+
+1767464117305 : POST : /stat/getHealthData
+
+1767464136286 : POST : /user/getUserData
+
+1767464136301 : GET : /asset/getFarm
+
+1767464136311 : POST : /stat/getHealthData
+
+1767464138281 : POST : /user/getUserData
+
+1767464138291 : GET : /asset/getFarm
+
+1767464138305 : POST : /stat/getHealthData
+
+1767464140294 : POST : /user/getUserData
+
+1767464140307 : GET : /asset/getFarm
+
+1767464140322 : POST : /stat/getHealthData
+
+1767464141280 : POST : /user/getUserData
+
+1767464141294 : GET : /asset/getFarm
+
+1767464141316 : POST : /stat/getHealthData
+
+1767464144320 : POST : /user/getUserData
+
+1767464144329 : GET : /asset/getFarm
+
+1767464144340 : POST : /stat/getHealthData
+
+1767464145293 : POST : /user/getUserData
+
+1767464145305 : GET : /asset/getFarm
+
+1767464145313 : POST : /stat/getHealthData
+
+1767464151287 : POST : /user/getUserData
+
+1767464151295 : GET : /asset/getFarm
+
+1767464151306 : POST : /stat/getHealthData
+
+1767464152271 : POST : /user/getUserData
+
+1767464152279 : GET : /asset/getFarm
+
+1767464152293 : POST : /stat/getHealthData
+
+1767464157274 : POST : /user/getUserData
+
+1767464157285 : GET : /asset/getFarm
+
+1767464157294 : POST : /stat/getHealthData
+
+1767464161294 : POST : /user/getUserData
+
+1767464161304 : GET : /asset/getFarm
+
+1767464161317 : POST : /stat/getHealthData
+
+1767464174314 : POST : /user/getUserData
+
+1767464174323 : GET : /asset/getFarm
+
+1767464174338 : POST : /stat/getHealthData
+
+1767464176309 : POST : /user/getUserData
+
+1767464176322 : GET : /asset/getFarm
+
+1767464176346 : POST : /stat/getHealthData
+
+1767464183302 : POST : /user/getUserData
+
+1767464183312 : GET : /asset/getFarm
+
+1767464183322 : POST : /stat/getHealthData
+
+1767464184323 : POST : /user/getUserData
+
+1767464184332 : GET : /asset/getFarm
+
+1767464184345 : POST : /stat/getHealthData
+
+1767464189291 : POST : /user/getUserData
+
+1767464189315 : GET : /asset/getFarm
+
+1767464189324 : POST : /stat/getHealthData
+
+1767464605135 : POST : /user/getUserData
+
+1767464605153 : GET : /asset/getFarm
+
+1767464605162 : POST : /stat/getHealthData
+
+1767464614087 : POST : /user/getUserData
+
+1767464614094 : GET : /asset/getFarm
+
+1767464614104 : POST : /stat/getHealthData
+
+1767464621099 : POST : /user/getUserData
+
+1767464621106 : GET : /asset/getFarm
+
+1767464621114 : POST : /stat/getHealthData
+
+1767464687099 : POST : /user/getUserData
+
+1767464687108 : POST : /stat/getHealthData
+
+1767464691093 : POST : /user/getUserData
+
+1767464691102 : GET : /farms/undefined
+
+1767464691146 : POST : /stat/getHealthData
+
+1767464796205 : POST : /user/getUserData
+
+1767464796208 : POST : /user/getUserData
+
+1767464796207 : POST : /user/getUserData
+
+1767464796208 : POST : /stat/getHealthData
+
+1767464796207 : POST : /user/getUserData
+
+1767464796208 : POST : /stat/getHealthData
+
+1767464796237 : POST : /stat/getHealthData
+
+1767464796237 : POST : /stat/getHealthData
+
+1767464796238 : POST : /stat/getHealthData
+
+1767464796239 : POST : /stat/getHealthData
+
+1767464892123 : POST : /stat/getHealthData
+
+1767464892126 : POST : /stat/getHealthData
+
+1767464892127 : POST : /stat/getHealthData
+
+1767465063214 : POST : /auth/signin
+
+1767465063365 : POST : /user/getUserData
+
+1767465063378 : GET : /asset/getFarm
+
+1767465063398 : POST : /stat/getHealthData
+
+1767465129704 : POST : /stat/getHealthData
+
+1767465141654 : POST : /user/getUserData
+
+1767465141680 : GET : /asset/getFarm
+
+1767465141698 : POST : /stat/getHealthData
+
+1767465149896 : POST : /stat/getHealthData
+
+1767465160609 : POST : /user/getUserData
+
+1767465160633 : GET : /asset/getFarm
+
+1767465160649 : POST : /stat/getHealthData
+
+1767465173303 : POST : /stat/getHealthData
+
+1767465267744 : POST : /user/getUserData
+
+1767465267768 : GET : /asset/getFarm
+
+1767465267788 : POST : /stat/getHealthData
+
+1767465314427 : POST : /user/getUserData
+
+1767465314452 : GET : /asset/getFarm
+
+1767465314491 : POST : /stat/getHealthData
+
+1767465334406 : POST : /stat/getHealthData
+
+1767465352346 : GET : /asset/debugFarm
+
+1767465387682 : GET : /asset/getFarm
+
+1767465417513 : GET : /asset/cleanup
+
+1767465429355 : GET : /asset/debugFarm
+
+1767465709479 : POST : /user/getUserData
+
+1767465709508 : GET : /asset/getFarm
+
+1767465709558 : POST : /stat/getHealthData
+
+1767465902086 : POST : /auth/signin
+
+1767465902376 : POST : /user/getUserData
+
+1767465902398 : GET : /asset/getFarm
+
+1767465902447 : POST : /stat/getHealthData
+
+1767466253684 : POST : /user/getUserData
+
+1767466253758 : GET : /farms/getAllFarms
+
+1767466253815 : POST : /stat/getHealthData
+
+1767466300450 : POST : /user/getUserData
+
+1767466300503 : GET : /farms/getAllFarms
+
+1767466300540 : POST : /stat/getHealthData
+
+1767466380428 : POST : /stat/getHealthData
+
+1767466386474 : POST : /user/getUserData
+
+1767466386529 : GET : /farms/getAllFarms
+
+1767466386572 : POST : /stat/getHealthData
+
+1767466865226 : GET : /farms/6958075f21f294db2214fba0
+
+1767466896118 : GET : /farms/6958075f21f294db2214fba0
+
+1767466896247 : GET : /farms/6958075f21f294db2214fba0/users
+
+1767466949225 : POST : /user/getUserData
+
+1767466949243 : GET : /farms/getAllFarms
+
+1767466949282 : POST : /stat/getHealthData
+
+1767466952943 : GET : /farms/6958075f21f294db2214fba0
+
+1767466953000 : GET : /farms/6958075f21f294db2214fba0/users
+
+1767467171045 : POST : /user/getUserData
+
+1767467171181 : GET : /farms/getAllFarms
+
+1767467171224 : POST : /stat/getHealthData
+
+1767467176088 : GET : /farms/6958075f21f294db2214fba0
+
+1767467176154 : GET : /farms/6958075f21f294db2214fba0/users
+
+1767467179001 : POST : /user/getUserData
+
+1767467179034 : GET : /farms/getAllFarms
+
+1767467179053 : POST : /stat/getHealthData
+
+1767467192574 : GET : /farms/6958075f21f294db2214fba0
+
+1767467194639 : GET : /farms/6958075f21f294db2214fba0/users
+
+1767551351772 : POST : /user/getUserData
+
+1767551351821 : GET : /farms/getAllFarms
+
+1767551351888 : POST : /stat/getHealthData
+
+1767551356054 : POST : /user/getUserData
+
+1767551356102 : GET : /farms/getAllFarms
+
+1767551356124 : POST : /stat/getHealthData
+
+1767551362094 : GET : /farms/6958075f21f294db2214fba0
+
+1767551362143 : GET : /farms/6958075f21f294db2214fba0/users
+
+1767551664235 : POST : /auth/signin
+
+1767551664351 : POST : /user/getUserData
+
+1767551664360 : GET : /farms/getAllFarms
+
+1767551664410 : POST : /stat/getHealthData
+
+1767551676324 : POST : /user/getUserData
+
+1767551676334 : GET : /farms/getAllFarms
+
+1767551676343 : POST : /stat/getHealthData
+
+1767551686842 : POST : /auth/signin
+
+1767551686930 : POST : /user/getUserData
+
+1767551686938 : GET : /farms/getAllFarms
+
+1767551686948 : POST : /stat/getHealthData
+
+1767551692258 : GET : /farms/6958075f21f294db2214fba0
+
+1767551692284 : GET : /farms/6958075f21f294db2214fba0/users
+
+1767551762710 : POST : /auth/signin
+
+1767551762797 : POST : /user/getUserData
+
+1767551762805 : GET : /farms/getAllFarms
+
+1767551762816 : POST : /stat/getHealthData
+
+1767551767089 : GET : /farms/6958075f21f294db2214fba0
+
+1767551767112 : GET : /farms/6958075f21f294db2214fba0/users
+
+1767552665736 : POST : /user/getUserData
+
+1767552746363 : POST : /user/getUserData
+
+1767552753033 : POST : /user/getUserData
+
+1767552755709 : POST : /user/getUserData
+
+1767552757013 : POST : /user/getUserData
+
+1767552758845 : POST : /user/getUserData
+
+1767552765146 : POST : /user/getUserData
+
+1767552844442 : POST : /user/getUserData
+
+1767552868287 : POST : /user/getUserData
+
+1767552872416 : POST : /user/getUserData
+
+1767552875606 : POST : /user/getUserData
+
+1767552878037 : POST : /user/getUserData
+
+1767552916910 : POST : /user/getUserData
+
+1767552928830 : POST : /user/getUserData
+
+1767552934830 : POST : /user/getUserData
+
+1767552939061 : POST : /user/getUserData
+
+1767552941839 : POST : /user/getUserData
+
+1767552945615 : POST : /user/getUserData
+
+1767552947343 : POST : /user/getUserData
+
+1767552950495 : POST : /user/getUserData
+
+1767552954121 : POST : /user/getUserData
+
+1767552956297 : POST : /user/getUserData
+
+1767552972933 : POST : /user/getUserData
+
+1767552983526 : POST : /user/getUserData
+
+1767552984748 : POST : /user/getUserData
+
+1767552987507 : POST : /user/getUserData
+
+1767552987517 : GET : /farms/6958075f21f294db2214fba0
+
+1767553049867 : POST : /user/getUserData
+
+1767553049884 : GET : /farms/6958075f21f294db2214fba0
+
+1767553056945 : POST : /user/getUserData
+
+1767553056952 : GET : /farms/6958075f21f294db2214fba0
+
+1767553075146 : POST : /user/getUserData
+
+1767553075155 : GET : /farms/6958075f21f294db2214fba0
+
+1767553087550 : POST : /user/getUserData
+
+1767553087558 : GET : /farms/6958075f21f294db2214fba0
+
+1767553090228 : POST : /user/getUserData
+
+1767553090236 : GET : /farms/6958075f21f294db2214fba0
+
+1767553094389 : POST : /user/getUserData
+
+1767553094399 : GET : /farms/6958075f21f294db2214fba0
+
+1767553115854 : POST : /user/getUserData
+
+1767553115862 : GET : /farms/6958075f21f294db2214fba0
+
+1767553165818 : POST : /user/getUserData
+
+1767553165834 : GET : /farms/6958075f21f294db2214fba0
+
+1767553177254 : POST : /user/getUserData
+
+1767553180881 : POST : /user/getUserData
+
+1767553180891 : GET : /farms/getAllFarms
+
+1767553180915 : POST : /stat/getHealthData
+
+1767553184293 : GET : /farms/6958075f21f294db2214fba0
+
+1767553184319 : GET : /farms/6958075f21f294db2214fba0/users
+
+1767553187551 : GET : /master/getBreedData
+
+1767553187552 : GET : /farms/getAllFarms
+
+1767553233147 : POST : /animal/addAnimal
+
+1767553254607 : POST : /animal/addAnimal
+
+1767553326811 : POST : /stat/getHealthData

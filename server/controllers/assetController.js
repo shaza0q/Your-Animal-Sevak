@@ -40,25 +40,6 @@ const addFarmData = async(req, res) => {
 
 }
 
-
-const getFarmData = async(req, res) => {
-    try{
-        const userId = req.user.id;
-
-        const farmData = await Farm.find(
-            {owner: userId}
-        )
-
-        return res.status(200).json({
-            message: "Got the farm data",
-            data: farmData
-        });
-    }
-    catch(err){
-        res.status(500).json({message: "unable to fetch farm data"})
-    }
-}
-
 const getWorkerData = async(req, res) => {
     try{
         const userId = req.user.id;
@@ -72,6 +53,5 @@ const getWorkerData = async(req, res) => {
 
 module.exports = {
     addFarmData,
-    getFarmData,
     getWorkerData
 }

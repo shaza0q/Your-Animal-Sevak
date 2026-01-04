@@ -1,9 +1,8 @@
 const express = require('express')
 const router = express.Router()
 const { protect } = require('../middlewares/auth')
-const { getFarmUsers, assignFarmUser, removeFarmUser, updateFarmUserRole } = require('../controllers/farmController')
+const { getFarmUsers, assignFarmUser, removeFarmUser, getFarmData, getAllFarmData } = require('../controllers/farmController')
 const { requireFarmAccess } = require('../middlewares/farmAuth')
-
 
 router.get(
   '/:farmId/users',
@@ -26,11 +25,17 @@ router.delete(
   removeFarmUser     // owner-only logic inside controller
 );
 
-router.patch(
-  '/:farmId/users/:userId/role',
+router.get(
+  '/getAllFarms', 
+  protect, 
+  getAllFarmData
+)
+
+router.get(
+  '/:farmId',
   protect,
-  requireFarmAccess, // ensures requester belongs to farm
-  updateFarmUserRole
-);
+  requireFarmAccess,
+  getFarmData
+)
 
 module.exports = router

@@ -71,9 +71,7 @@ const animalSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 
-animalSchema.index({tagNumber: 1}, {unique: true});
-animalSchema.index({type: 1})
-animalSchema.index({feedType: 1})
+animalSchema.index({tagNumber: 1});
 animalSchema.index({farmId: 1})
 animalSchema.index({status: 1})
 animalSchema.index({dateOfBirth: 1})

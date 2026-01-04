@@ -1,3 +1,13 @@
+/**
+ * @typedef {import('../types/schemas/farm.schema').Farm} Farm
+ * @typedef {import('../types/dtos/farmUser.dto').FarmUserDTO} FarmUserDTO
+ * @typedef {import('../types/dtos/farm.dto').FarmDTO} FarmDTO
+ * @typedef {import('../types/dtos/apiResponse.dto').ApiResponse<FarmUserDTO[]>} FarmUserListResponse
+ * @typedef {import('../types/dtos/apiResponse.dto').ApiResponse<FarmUserDTO>} AssignFarmUserResponse
+ * @typedef {import('../types/schemas/populatedUser.schema').PopulatedUser} PopulatedUser
+ * @typedef {import('../types/dtos/farmSummary.dto').FarmSummaryDTO} FarmSummaryDTO
+ */
+
 const FarmUser = require('../models/farmUser');
 const Farm = require('../models/farm');
 const newUser = require('../models/newUsers');
@@ -7,8 +17,6 @@ const getFarmUsers = async (req, res) => {
   try {
     const { farmId } = req.params;
     
-    logger.info(`=== GETTING FARM USERS for farm: ${farmId} ===`);
-
     const farmUsers = await FarmUser.find({
       farmId,
       isActive: true,
@@ -16,20 +24,40 @@ const getFarmUsers = async (req, res) => {
       .populate('userId', 'full_name email')
       .lean();
 
-    const response = farmUsers.map((fu) => ({
-      id: fu.userId._id,
-      name: fu.userId.full_name,
-      email: fu.userId.email,
-      role: fu.role,
-      assignedDate: fu.assignedAt,
-    }));
+    /** @type {FarmUserDTO[]} */
+    const data = farmUsers.map((fu) => {
+      const user = fu.userId;
 
-    return res.status(200).json({
-      message: "Farm users retrieved successfully",
-      data: response,
+      // Runtime guard (THIS is the key)
+      if (!user || typeof user !== "object" || !("full_name" in user) || !("email" in user)) {
+        throw new Error("Expected userId to be populated with full_name and email");
+      }
+
+      /** @type {PopulatedUser} */
+      const populatedUser = {
+        _id: user._id,
+        full_name: String(user.full_name),
+        email: String(user.email)
+      };
+
+      return {
+        id: populatedUser._id?.toString(),
+        name: populatedUser.full_name,
+        email: populatedUser.email,
+        role: fu.role,
+        assignedDate: fu.assignedAt,
+      };
     });
+
+    /** @type {FarmUserListResponse} */
+    const responseBody = {
+      message: "Farm users retrieved successfully",
+      data,
+    };
+
+    return res.status(200).json(responseBody);
+
   } catch (err) {
-    console.error("Error retrieving farm users:", err);
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -40,30 +68,29 @@ const assignFarmUser = async (req, res) => {
     const { userId, role } = req.body;
     const requesterId = req.user.id;
 
+    // 1️⃣ Validate input
     if (!userId || !role) {
-      return res.status(400).json({
-        message: "userId and role are required",
-      });
+      return res.status(400).json({ message: "userId and role are required" });
     }
 
     const normalizedRole = role.toLowerCase();
-    const allowedRoles = ['staff', 'caretaker', 'veterinarian'];
+    const allowedRoles = ["staff", "caretaker", "veterinarian"];
 
     if (!allowedRoles.includes(normalizedRole)) {
       return res.status(400).json({ message: "Invalid role" });
     }
 
-    // 1️⃣ Ensure farm exists
+    // 2️⃣ Ensure farm exists
     const farm = await Farm.findById(farmId);
     if (!farm) {
       return res.status(404).json({ message: "Farm not found" });
     }
 
-    // 2️⃣ Ensure requester is OWNER
+    // 3️⃣ Ensure requester is OWNER
     const requesterMembership = await FarmUser.findOne({
       farmId,
       userId: requesterId,
-      role: 'owner',
+      role: "owner",
       isActive: true,
     });
 
@@ -73,46 +100,51 @@ const assignFarmUser = async (req, res) => {
       });
     }
 
-    // 3️⃣ Ensure target user exists
+    // 4️⃣ Ensure target user exists
     const targetUser = await newUser.findById(userId);
     if (!targetUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // 4️⃣ Check for existing assignment (active or inactive)
-    const existingAssignment = await FarmUser.findOne({
-      farmId,
-      userId,
-    });
+    // 5️⃣ Check existing assignment
+    const existingAssignment = await FarmUser.findOne({ farmId, userId });
 
     if (existingAssignment) {
       if (existingAssignment.isActive) {
         return res.status(409).json({
           message: "User is already assigned to this farm",
         });
-      } else {
-        // Reactivate previously removed user
-        existingAssignment.isActive = true;
-        existingAssignment.role = normalizedRole;
-        existingAssignment.updatedBy = requesterId;
-        await existingAssignment.save();
-
-        await existingAssignment.populate('userId', 'full_name email');
-
-        return res.status(200).json({
-          message: "User reactivated and assigned to farm successfully",
-          data: {
-            id: existingAssignment.userId._id,
-            name: existingAssignment.userId.full_name,
-            email: existingAssignment.userId.email,
-            role: existingAssignment.role,
-            assignedDate: existingAssignment.updatedAt,
-          },
-        });
       }
+
+      // 🔁 Reactivate
+      existingAssignment.isActive = true;
+      existingAssignment.role = normalizedRole;
+      await existingAssignment.save();
+
+      await existingAssignment.populate("userId", "full_name email");
+
+      /** @type {PopulatedUser} */
+      const populatedUser = /** @type {PopulatedUser} */ (/** @type {unknown} */ (existingAssignment.userId));
+
+      /** @type {FarmUserDTO} */
+      const data = {
+        id: populatedUser._id?.toString() || populatedUser.toString(),
+        name: populatedUser.full_name,
+        email: populatedUser.email,
+        role: existingAssignment.role,
+        assignedDate: existingAssignment.updatedAt,
+      };
+
+      /** @type {AssignFarmUserResponse} */
+      const responseBody = {
+        message: "User reactivated and assigned to farm successfully",
+        data,
+      };
+
+      return res.status(200).json(responseBody);
     }
 
-    // 5️⃣ Create mapping
+    // 6️⃣ Create new mapping
     const farmUser = await FarmUser.create({
       farmId,
       userId,
@@ -120,19 +152,27 @@ const assignFarmUser = async (req, res) => {
       createdBy: requesterId,
     });
 
-    // 6️⃣ Populate response for frontend
-    await farmUser.populate('userId', 'full_name email');
+    await farmUser.populate("userId", "full_name email");
 
-    return res.status(201).json({
+    /** @type {PopulatedUser} */
+    const populatedUser = /** @type {PopulatedUser} */ (/** @type {unknown} */ (farmUser.userId));
+
+    /** @type {FarmUserDTO} */
+    const data = {
+      id: populatedUser._id?.toString() || populatedUser.toString(),
+      name: populatedUser.full_name,
+      email: populatedUser.email,
+      role: farmUser.role,
+      assignedDate: farmUser.createdAt,
+    };
+
+    /** @type {AssignFarmUserResponse} */
+    const responseBody = {
       message: "User assigned to farm successfully",
-      data: {
-        id: farmUser.userId._id,
-        name: farmUser.userId.full_name,
-        email: farmUser.userId.email,
-        role: farmUser.role,
-        assignedDate: farmUser.createdAt,
-      },
-    });
+      data,
+    };
+
+    return res.status(201).json(responseBody);
 
   } catch (err) {
     console.error("Error assigning farm user:", err);
@@ -201,99 +241,153 @@ const removeFarmUser = async (req, res) => {
   }
 };
 
-const updateFarmUserRole = async (req, res) => {
-  try {
-    const { farmId, userId } = req.params;
-    const { role } = req.body;
-    const requesterId = req.user.id;
+// const updateFarmUserRole = async (req, res) => {
+//   try {
+//     const { farmId, userId } = req.params;
+//     const { role } = req.body;
+//     const requesterId = req.user.id;
 
-    // 1️⃣ Validate role
-    const allowedRoles = ['staff', 'caretaker'];
-    if (!role || !allowedRoles.includes(role.toLowerCase())) {
-      return res.status(400).json({
-        message: "Invalid role",
-      });
-    }
+//     // 1️⃣ Validate role
+//     const allowedRoles = ['staff', 'caretaker'];
+//     if (!role || !allowedRoles.includes(role.toLowerCase())) {
+//       return res.status(400).json({
+//         message: "Invalid role",
+//       });
+//     }
 
-    // 2️⃣ Ensure requester is OWNER
-    const requesterMembership = await FarmUser.findOne({
-      farmId,
-      userId: requesterId,
-      role: 'owner',
-      isActive: true,
-    });
+//     // 2️⃣ Ensure requester is OWNER
+//     const requesterMembership = await FarmUser.findOne({
+//       farmId,
+//       userId: requesterId,
+//       role: 'owner',
+//       isActive: true,
+//     });
 
-    if (!requesterMembership) {
-      return res.status(403).json({
-        message: "Only farm owners can change roles",
-      });
-    }
+//     if (!requesterMembership) {
+//       return res.status(403).json({
+//         message: "Only farm owners can change roles",
+//       });
+//     }
 
-    // Prevent editing owner or vet
-    if (targetMembership.role === "owner") {
-      return res.status(400).json({
-        message: "Owner role cannot be modified",
-      });
-    }
+//     // Prevent editing owner or vet
+//     if (targetMembership.role === "owner") {
+//       return res.status(400).json({
+//         message: "Owner role cannot be modified",
+//       });
+//     }
 
-    if (targetMembership.role === "veterinarian") {
-      return res.status(400).json({
-        message: "Veterinarian role cannot be modified",
-      });
-    }
+//     if (targetMembership.role === "veterinarian") {
+//       return res.status(400).json({
+//         message: "Veterinarian role cannot be modified",
+//       });
+//     }
 
-    // 3️⃣ Prevent self-role change
-    if (requesterId === userId) {
-      return res.status(400).json({
-        message: "Owner cannot change their own role",
-      });
-    }
+//     // 3️⃣ Prevent self-role change
+//     if (requesterId === userId) {
+//       return res.status(400).json({
+//         message: "Owner cannot change their own role",
+//       });
+//     }
 
-    // 4️⃣ Find target membership
-    const targetMembership = await FarmUser.findOne({
-      farmId,
-      userId,
-      isActive: true,
-    });
+//     // 4️⃣ Find target membership
+//     const targetMembership = await FarmUser.findOne({
+//       farmId,
+//       userId,
+//       isActive: true,
+//     });
 
-    if (!targetMembership) {
-      return res.status(404).json({
-        message: "User is not assigned to this farm",
-      });
-    }
+//     if (!targetMembership) {
+//       return res.status(404).json({
+//         message: "User is not assigned to this farm",
+//       });
+//     }
 
-    // 5️⃣ Prevent modifying another owner
-    if (targetMembership.role === 'owner') {
-      return res.status(400).json({
-        message: "Cannot change role of another owner",
-      });
-    }
+//     // 5️⃣ Prevent modifying another owner
+//     if (targetMembership.role === 'owner') {
+//       return res.status(400).json({
+//         message: "Cannot change role of another owner",
+//       });
+//     }
 
-    // 6️⃣ Prevent no-op update
-    if (targetMembership.role === role.toLowerCase()) {
-      return res.status(409).json({
-        message: "User already has this role",
-      });
-    }
+//     // 6️⃣ Prevent no-op update
+//     if (targetMembership.role === role.toLowerCase()) {
+//       return res.status(409).json({
+//         message: "User already has this role",
+//       });
+//     }
 
-    const oldRole = targetMembership.role;
-    targetMembership.role = role.toLowerCase();
-    targetMembership.updatedBy = requesterId;
-    await targetMembership.save();
+//     const oldRole = targetMembership.role;
+//     targetMembership.role = role.toLowerCase();
+//     targetMembership.updatedBy = requesterId;
+//     await targetMembership.save();
 
-    return res.status(200).json({
-      message: "User role updated successfully",
-      data: {
-        userId,
-        oldRole,
-        newRole: role.toLowerCase(),
-      },
-    });
+//     return res.status(200).json({
+//       message: "User role updated successfully",
+//       data: {
+//         userId,
+//         oldRole,
+//         newRole: role.toLowerCase(),
+//       },
+//     });
 
-  } catch (err) {
-    console.error("Error updating farm user role:", err);
-    return res.status(500).json({ message: "Server error" });
+//   } catch (err) {
+//     console.error("Error updating farm user role:", err);
+//     return res.status(500).json({ message: "Server error" });
+//   }
+// };
+
+const getFarmData = async (req, res) => {
+  /** @type {Farm | null} */
+  const farm = await Farm.findById(req.params.farmId).lean()
+
+  if (!farm) {
+    return res.status(404).json({ message: "Farm not found" })
   }
-};
 
-module.exports = { getFarmUsers, assignFarmUser, removeFarmUser, updateFarmUserRole };
+  /** @type {FarmSummaryDTO} */
+  const data = {
+    id: farm._id.toString(),
+    name: farm.name,
+    location: farm.location,
+    animalTypes: farm.animalTypes,
+    capacity: farm.capacity,
+  }
+
+  res.json({
+    message: "Farm fetched successfully",
+    data: {
+      ...data,
+    }
+  })
+}
+
+const getAllFarmData = async(req, res) => {
+    try{
+        const userId = req.user.id;
+        
+        // First, let's see all farms in the database
+        const allFarms = await Farm.find({});
+        
+        // Now let's try the specific query
+        const farmData = await Farm.find(
+            {owner: userId}
+        )
+        
+        // Let's also try a direct ObjectId comparison
+        const mongoose = require('mongoose');
+        const farmDataWithObjectId = await Farm.find({
+            owner: new mongoose.Types.ObjectId(userId)
+        });
+        
+        return res.status(200).json({
+            message: "Got the farm data",
+            data: farmData
+        });
+    }
+    catch(err){
+        console.error("DEBUG: Error in getFarmData:", err);
+        res.status(500).json({message: "unable to fetch farm data"})
+    }
+}
+
+module.exports = { getFarmUsers, assignFarmUser, removeFarmUser, getFarmData, getAllFarmData };

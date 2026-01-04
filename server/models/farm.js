@@ -1,39 +1,52 @@
+// models/farm.js
 const mongoose = require('mongoose')
 
 const FarmSchema = new mongoose.Schema({
-    owner: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'newUser',
-        required: true,
-    },
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'newUser',
+    required: true,
+  },
 
-    name: {
-        type: String,
-        required: true
-    },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "newUser",
+    required: true,
+  },
 
-    animalTypes: {
-        type: [String],  // <-- array of strings
-        default: []
-    },
+  name: {
+    type: String,
+    required: true
+  },
 
-    location: {
-        type: String,
-    },
-    
-    capacity: {
-        type: Number,
-    },
+  animalTypes: {
+    type: [String],
+    default: []
+  },
 
-    createdAt: {
-        type: Date,
-        default: Date.now,
-    },
+  location: {
+    type: String,
+  },
+  
+  capacity: {
+    type: Number,
+  },
 
-    updatedAt: {
-        type: Date,
-        default: Date.now,
-    },
+  status: {
+    type: String,
+    enum: ["active", "inactive", "archived"],
+    default: "active",
+  },
+  
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
 })
 
 module.exports = mongoose.model("Farm", FarmSchema)
