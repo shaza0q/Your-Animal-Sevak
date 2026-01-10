@@ -1,5 +1,6 @@
 import axios from "axios";
 import { API_BASE_URL } from "../../cache";
+import { FarmSummaryDto } from "@/interface";
 
 export const getFarmData = async (farmId: string): Promise<FarmSummaryDto> => {
     try {

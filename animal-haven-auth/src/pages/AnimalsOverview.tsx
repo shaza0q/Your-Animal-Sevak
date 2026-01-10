@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Beef, Bird, Rabbit, PawPrint } from "lucide-react";
-import { getAnimalCategories, mockFarms } from "@/data/mockAnimals";
 import { getUserData } from "@/api/getUserData";
 import { getFarmData } from "@/api/getFarmData";
 import { FarmSummaryDto } from "@/interface/farm.interface";
+import { getAnimalOverview } from "@/api/getAnimalOverview";
+import { AnimalOverviewResponse } from "@/interface";
 
 const animalIcons: Record<string, React.ReactNode> = {
   Cow: <Beef className="h-10 w-10" />,
@@ -25,44 +26,94 @@ const AnimalsOverview = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [farm, setFarm] = useState<FarmSummaryDto | null>(null)
+  const [animalOverview, setAnimalOverview] = useState<AnimalOverviewResponse | null>(null)
 
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const userData = await getUserData(); 
-        // console.log(userData)
-        
-        setUser(userData); 
-        getFarm();
-
-      } catch (error) {
-        // 3. If API fails (401 due to bad cookie, network error, etc.)
-        console.error("Auth check failed, redirecting:", error);
-        setUser(null);
-        navigate("/signin", { replace: true });
-      } 
-    };
-
-    const getFarm = async () => {
-      try {
-        // 1. AWAIT the API call to get the resolved user data
-        const farmData = await getFarmData(farmId); 
-        // 2. Set the state with the actual data
-        setFarm(farmData); 
-
-      } catch (error) {
-        // 3. If API fails (401 due to bad cookie, network error, etc.)
-        console.error("Farm not found", error)
-
-      } 
+  const fetchUser = async () => {
+    try {
+      const user = await getUserData();
+      setUser(user);
+      return user;
+    } catch (err) {
+      console.error("Auth failed", err);
+      throw err;
+    }
   };
 
-    checkAuth();
-  }, [navigate])
-       
+  const fetchFarm = async (farmId: string) => {
+    try {
+      const farm = await getFarmData(farmId);
+      setFarm(farm);
+      return farm;
+    } catch (err) {
+      console.error("Farm fetch failed", err);
+      throw err;
+    }
+  };
+
+  const fetchAnimalOverview = async (farmId: string) => {
+    try {
+      const overview = await getAnimalOverview(farmId);
+      setAnimalOverview(overview);
+      return overview;
+    } catch (err) {
+      console.error("Animal overview fetch failed", err);
+      throw err;
+    }
+  };
+   
+  useEffect(() => {
+    const init = async () => {
+      try {
+        setLoading(true);
+
+        await fetchUser();
+        await fetchFarm(farmId);
+        await fetchAnimalOverview(farmId);
+
+      } catch (error) {
+        // ONE place decides what to do
+        setUser(null);
+        navigate("/signin", { replace: true });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (farmId) {
+      init();
+    }
+  }, [farmId, navigate]);
+
 
   if (!user) return null;
+
+  /* --------------------have to add loading buffer page----------------------- */
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="border-b bg-card shadow-sm">
+          <div className="container mx-auto px-4 py-4">
+            <Skeleton className="h-6 w-64" />
+          </div>
+        </header>
+        <main className="container mx-auto px-4 py-8">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <Skeleton className="h-10 w-10 rounded-full mb-4" />
+                  <Skeleton className="h-6 w-24 mb-2" />
+                  <Skeleton className="h-4 w-32" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </main>
+      </div>
+    );
+  }
 
 
   if (!farm) {
@@ -81,7 +132,7 @@ const AnimalsOverview = () => {
     );
   }
 
-  const categories = getAnimalCategories(farmId!);
+  const categories = animalOverview?.categories ?? []
   const totalAnimals = categories.reduce((sum, cat) => sum + cat.total, 0);
   const totalUnassigned = categories.reduce((sum, cat) => sum + cat.unassigned, 0);
 
