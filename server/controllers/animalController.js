@@ -6,6 +6,7 @@ const multer = require('multer')
 const cloudinary = require('cloudinary').v2
 const fs = require('fs')
 const dotenv = require('dotenv')
+const { getAnimalOverviewByFarm } = require('../services/animalOverview.service')
 dotenv.config()
 
 const upload = multer({dest: "uploads/"})
@@ -79,17 +80,18 @@ const addAnimalData = async (req, res) => {
             dateOfBirth,
             acquisitionDate
         });
-
         
-        await animal.save();
         
         const animalUpdate = new AnimalUpdate({
-            animalId: animal._id,
-            weight: weight,
-            staffId: userId,
+          animalId: animal._id,
+          weight: weight,
+          staffId: userId,
+          updateType: "Health",
+          status: "Healthy"
         })
-
+        
         await animalUpdate.save();
+        await animal.save();
 
         return res.status(201).json({ message: "Animal added successfully" });
 
@@ -281,9 +283,28 @@ const updateAnimalData = async (req, res) => {
   }
 };
 
+const getAnimalOverview = async(req, res) => {
+  try{
+    const { farmId } = req.params;
+    if (!farmId) {
+      return res.status(400).json({ message: "farmId is required" });
+    }
+
+    const data = await getAnimalOverviewByFarm(farmId);
+
+    return res.json(data);
+  } catch (error) {
+    console.error("Animal overview error:", error);
+    return res
+      .status(500)
+      .json({ message: "Failed to fetch animal overview" });
+  }
+}
+
 
 module.exports = {
     addAnimalData,
     updateAnimalData,
-    upload
+    upload,
+    getAnimalOverview
 };

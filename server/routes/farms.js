@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const { protect } = require('../middlewares/auth')
 const { getFarmUsers, assignFarmUser, removeFarmUser, getFarmData, getAllFarmData } = require('../controllers/farmController')
+const { getAnimalOverview } = require('../controllers/animalController')
 const { requireFarmAccess } = require('../middlewares/farmAuth')
 
 router.get(
@@ -36,6 +37,13 @@ router.get(
   protect,
   requireFarmAccess,
   getFarmData
+)
+
+router.get(
+  '/:farmId/animals/overview',
+  protect,
+  requireFarmAccess,
+  getAnimalOverview
 )
 
 module.exports = router

@@ -4,7 +4,6 @@ const animalSchema = new mongoose.Schema({
   tagNumber: { 
     type: String, 
     required: true, 
-    unique: true 
   },
 
   name: { type: String, required: true },
@@ -63,11 +62,10 @@ const animalSchema = new mongoose.Schema({
     default: 'Active',
   },
 
-  caretakers: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'newUser'
-  }],
-
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  }
 }, { timestamps: true });
 
 
@@ -75,6 +73,10 @@ animalSchema.index({tagNumber: 1});
 animalSchema.index({farmId: 1})
 animalSchema.index({status: 1})
 animalSchema.index({dateOfBirth: 1})
+animalSchema.index(
+  { farmId: 1, tagNumber: 1 },
+  { unique: true }
+);
 
 
 module.exports = mongoose.model("Animal", animalSchema);
