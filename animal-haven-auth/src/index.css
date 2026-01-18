@@ -103,3 +103,32 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+
+@layer components {
+  /* Status badge color variants */
+  .badge-healthy {
+    @apply bg-primary/15 text-primary border-primary/30;
+  }
+  
+  .badge-pregnant {
+    @apply bg-amber-500/15 text-amber-600 border-amber-500/30 dark:text-amber-400;
+  }
+  
+  .badge-vaccinated {
+    @apply bg-blue-500/10 text-blue-600 border-blue-500/40 dark:text-blue-400;
+  }
+  
+  .badge-unassigned {
+    @apply bg-destructive/10 text-destructive border-destructive/40;
+  }
+  
+  /* Card hover lift effect */
+  .card-hover-lift {
+    @apply transition-all duration-200 ease-out;
+  }
+  
+  .card-hover-lift:hover {
+    @apply -translate-y-1 shadow-lg;
+  }
+}

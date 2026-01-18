@@ -17,7 +17,7 @@ import AnimalUpdate from "./pages/AnimalUpdate";
 import Directory from "./pages/Directory";
 import FarmAnimals from "./pages/FarmAnimals";
 import AnimalsOverview from "./pages/AnimalsOverview";
-import AnimalDetail from "./pages/AnimalDetail";
+import AnimalDetail from "./pages/AnimalDetail1";
 import AnimalsByCategory from "./pages/AnimalsByCategory";
 
 const queryClient = new QueryClient();

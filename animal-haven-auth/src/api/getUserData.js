@@ -5,7 +5,6 @@ import {API_BASE_URL} from '../../cache'
 export const getUserData = async() => {
     try{
         const response = await axios.post(`${API_BASE_URL}/user/getUserData`, {}, {withCredentials: true})
-        // console.log("8 from api/getUserData: ", response)
         return response.data
     }
     catch(error){

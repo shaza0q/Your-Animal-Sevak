@@ -10,13 +10,23 @@ import { getFarmData } from "@/api/getFarmData";
 import { FarmSummaryDto } from "@/interface/farm.interface";
 import { getAnimalOverview } from "@/api/getAnimalOverview";
 import { AnimalOverviewResponse } from "@/interface";
+import { AnimalType } from "@/enums/animal-type.enum";
 
 const animalIcons: Record<string, React.ReactNode> = {
-  Cow: <Beef className="h-10 w-10" />,
-  Bull: <Beef className="h-10 w-10" />,
-  Calf: <Beef className="h-10 w-10" />,
-  Goat: <Rabbit className="h-10 w-10" />,
-  Sheep: <Bird className="h-10 w-10" />,
+  [AnimalType.COW]: <Beef className="h-10 w-10" />,
+  [AnimalType.BUFFALO]: <Beef className="h-10 w-10" />,
+  [AnimalType.GOAT]: <Rabbit className="h-10 w-10" />,
+  [AnimalType.SHEEP]: <Bird className="h-10 w-10" />,
+  [AnimalType.CHICKEN]: <Bird className="h-10 w-10" />,
+  [AnimalType.DUCK]: <Bird className="h-10 w-10" />,
+  [AnimalType.RABBIT]: <Rabbit className="h-10 w-10" />,
+  [AnimalType.DOG]: <PawPrint className="h-10 w-10" />,
+  [AnimalType.CAT]: <PawPrint className="h-10 w-10" />,
+  [AnimalType.CAMEL]: <PawPrint className="h-10 w-10" />,
+  [AnimalType.DONKEY]: <PawPrint className="h-10 w-10" />,
+  [AnimalType.HORSE]: <PawPrint className="h-10 w-10" />,
+  [AnimalType.PIGEON]: <Bird className="h-10 w-10" />,
+  [AnimalType.TURKEY]: <Bird className="h-10 w-10" />,
   default: <PawPrint className="h-10 w-10" />
 };
 
@@ -196,7 +206,7 @@ const AnimalsOverview = () => {
               <Card 
                 key={category.type}
                 className="cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all"
-                onClick={() => navigate(`/farms/${farmId}/animals/type/${category.type.toLowerCase()}`)}
+                onClick={() => navigate(`/farms/${farmId}/animals/type/${category.type}`)}
               >
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">

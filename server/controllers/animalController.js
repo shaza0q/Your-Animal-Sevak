@@ -7,6 +7,7 @@ const cloudinary = require('cloudinary').v2
 const fs = require('fs')
 const dotenv = require('dotenv')
 const { getAnimalOverviewByFarm } = require('../services/animalOverview.service')
+const { getAnimalsByType, getAnimalDetail } = require('../services/animal.service')
 dotenv.config()
 
 const upload = multer({dest: "uploads/"})
@@ -301,10 +302,73 @@ const getAnimalOverview = async(req, res) => {
   }
 }
 
+async function listAnimalsByType(req, res) {
+  try {
+    const { farmId } = req.params;
+    const {
+      type,
+      page = 1,
+      limit = 12,
+      assigned,
+      gender,
+      breed,
+      caretakerName,
+      vetName,
+      status = "Active",
+    } = req.query;
+
+    if (!type) {
+      return res.status(400).json({ message: "animal type is required" });
+    }
+
+    const data = await getAnimalsByType({
+      farmId,
+      type,
+      page: Number(page),
+      limit: Number(limit),
+      assigned,
+      gender,
+      breed,
+      caretakerName,
+      vetName,
+      status,
+    });
+
+    return res.json(data);
+  } catch (err) {
+    console.error("Failed to list animals", err);
+    return res.status(500).json({ message: "Failed to fetch animals" });
+  }
+}
+
+const getAnimalDetailController = async(req, res) => {
+  try{
+    const { farmId, animalId } = req.params;
+  
+    const animalData = await getAnimalDetail({ 
+      farmId, 
+      animalId 
+    });
+
+    if(!animalData){
+      return res.status(404).json({ message: "Animal not found" });
+    }
+  
+    console.log("----------------Animal detail:", animalData);
+    return res.json(animalData);
+  } catch (error) {
+    console.error("Animal detail error:", error);
+    return res
+      .status(500)
+      .json({ message: "Failed to fetch animal detail" });
+  }
+}
 
 module.exports = {
     addAnimalData,
     updateAnimalData,
     upload,
-    getAnimalOverview
+    getAnimalOverview,
+    listAnimalsByType,
+    getAnimalDetailController
 };

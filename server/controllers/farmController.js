@@ -74,7 +74,7 @@ const assignFarmUser = async (req, res) => {
     }
 
     const normalizedRole = role.toLowerCase();
-    const allowedRoles = ["staff", "caretaker", "veterinarian"];
+    const allowedRoles = ["admin", "staff", "caretaker", "veterinarian", "owner"];
 
     if (!allowedRoles.includes(normalizedRole)) {
       return res.status(400).json({ message: "Invalid role" });
@@ -106,6 +106,9 @@ const assignFarmUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Use user's original role from their profile, not from farm assignment
+    const userOriginalRole = targetUser.role;
+
     // 5️⃣ Check existing assignment
     const existingAssignment = await FarmUser.findOne({ farmId, userId });
 
@@ -118,7 +121,7 @@ const assignFarmUser = async (req, res) => {
 
       // 🔁 Reactivate
       existingAssignment.isActive = true;
-      existingAssignment.role = normalizedRole;
+      existingAssignment.role = userOriginalRole; // Use user's original role
       await existingAssignment.save();
 
       await existingAssignment.populate("userId", "full_name email");
@@ -148,7 +151,7 @@ const assignFarmUser = async (req, res) => {
     const farmUser = await FarmUser.create({
       farmId,
       userId,
-      role: normalizedRole,
+      role: userOriginalRole, // Use user's original role from profile
       createdBy: requesterId,
     });
 

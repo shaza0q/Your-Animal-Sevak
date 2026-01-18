@@ -18,7 +18,7 @@ const farmUserSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["owner", "staff", "caretaker", "veterinarian"],
+      enum: ["admin", "owner", "staff", "caretaker", "veterinarian"],
       required: true,
     },
 

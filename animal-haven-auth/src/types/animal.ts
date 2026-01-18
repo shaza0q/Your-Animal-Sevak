@@ -36,6 +36,7 @@ export interface AnimalCategory {
 }
 
 export interface FarmUser {
+  _id: string;
   id: string;
   name: string;
   email: string;
