@@ -7,7 +7,7 @@ const cloudinary = require('cloudinary').v2
 const fs = require('fs')
 const dotenv = require('dotenv')
 const { getAnimalOverviewByFarm } = require('../services/animalOverview.service')
-const { getAnimalsByType, getAnimalDetail } = require('../services/animal.service')
+const { getAnimalsByType, getAnimalDetail, getAnimalHistory } = require('../services/animal.service')
 dotenv.config()
 
 const upload = multer({dest: "uploads/"})
@@ -364,11 +364,37 @@ const getAnimalDetailController = async(req, res) => {
   }
 }
 
-module.exports = {
+const getAnimalHistoryController = async(req, res) => {
+  try{
+    const { animalId } = req.params;
+    const { page = 1, limit = 5 } = req.query;
+
+    const animalHistory = await getAnimalHistory({
+      animalId,
+      page: parseInt(page),
+      limit: parseInt(limit)
+    })
+    
+    if(!animalHistory){
+      return res.status(404).json({ message: "Animal not found" });
+    }
+  
+    console.log("----------------Animal history:", animalHistory);
+    return res.json(animalHistory);
+
+  }
+  catch(error){
+    return res
+    .status(500)
+    .json({ message: "Failed to fetch animal history" })
+  }
+}
+module.exports = { 
     addAnimalData,
     updateAnimalData,
     upload,
     getAnimalOverview,
     listAnimalsByType,
-    getAnimalDetailController
+    getAnimalDetailController,
+    getAnimalHistoryController
 };

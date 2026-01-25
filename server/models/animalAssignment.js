@@ -15,40 +15,50 @@ const animalAssignmentSchema = new mongoose.Schema({
 
   role: {
     type: String,
-    enum: ['owner', 'staff', 'caretaker', 'veterinarian'],
+    enum: ['caretaker', 'veterinarian'],
     default: null,
   },
-  
-  farmId: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: "Farm", 
-    required: true },
-  
-  assignedAt: { 
-    type: Date, 
+
+  farmId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Farm",
+    required: true,
+  },
+
+  assignedAt: {
+    type: Date,
     default: Date.now,
   },
-  // null => active assignment
-    // date => assignment ended
-    unassignedAt: {
-      type: Date,
-      default: Date.now, // default = unassigned
-    },
 
-    // optional but VERY useful
-    assignmentSource: {
-      type: String,
-      enum: ["system", "manual", "import"],
-      default: "system",
-    },
-
-    notes: {
-      type: String,
-      default: "",
-    },
+  unassignedAt: {
+    type: Date,
+    default: null, // ✅ IMPORTANT: null = active
   },
-  { timestamps: true } // gives createdAt + updatedAt
-);
+
+  // 👇 WHO performed the action
+  assignedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "newUser",
+    default: null,
+  },
+
+  unassignedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "newUser",
+    default: null,
+  },
+
+  assignmentSource: {
+    type: String,
+    enum: ["system", "manual", "import"],
+    default: "manual",
+  },
+
+  notes: {
+    type: String,
+    default: "",
+  },
+}, { timestamps: true });
 
 /* Indexes */
 animalAssignmentSchema.index({ animalId: 1, unassignedAt: 1 });

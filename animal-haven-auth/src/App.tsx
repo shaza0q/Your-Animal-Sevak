@@ -19,6 +19,7 @@ import FarmAnimals from "./pages/FarmAnimals";
 import AnimalsOverview from "./pages/AnimalsOverview";
 import AnimalDetail from "./pages/AnimalDetail1";
 import AnimalsByCategory from "./pages/AnimalsByCategory";
+import AnimalHistoryPage from "./components/history/AnimalHistoryPage";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/farms/:farmId/animals" element={<AnimalsOverview />} />
             <Route path="/farms/:farmId/animals/type/:animalType" element={<AnimalsByCategory />} />
             <Route path="/farms/:farmId/animals/:animalId" element={<AnimalDetail />} />
+            <Route path="/farms/:farmId/animals/:animalId/history" element={<AnimalHistoryPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -264,7 +264,7 @@ const FarmStaffSection = ({ farmId, isOwner = true }: FarmStaffSectionProps) => 
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              👥 Farm Staff & Veterinarians
+              Farm Staff & Veterinarians
             </CardTitle>
             {isOwner ? (
               <Button onClick={() => setIsModalOpen(true)} size="sm">

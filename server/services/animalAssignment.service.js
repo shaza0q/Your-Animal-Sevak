@@ -32,17 +32,67 @@ async function getActiveAssignments(animalId) {
     },
     { $unwind: "$worker" },
     {
+      $lookup: {
+        from: "newusers",
+        localField: "assignedBy",
+        foreignField: "_id",
+        as: "assignedByUser",
+      },
+    },
+    {
+      $lookup: {
+        from: "newusers",
+        localField: "unassignedBy",
+        foreignField: "_id",
+        as: "unassignedByUser",
+      },
+    },
+    {
       $project: {
         _id: 1,
         role: 1,
         assignedAt: 1,
+        assignedBy: 1,
+        unassignedBy: 1,
         worker: {
           _id: "$worker._id",
           name: "$worker.full_name",
           email: "$worker.email",
         },
+        assignedByUser: {
+          $arrayElemAt: ["$assignedByUser", 0]
+        },
+        unassignedByUser: {
+          $arrayElemAt: ["$unassignedByUser", 0]
+        },
       },
     },
+    {
+      $addFields: {
+        assignedByUser: {
+          $cond: [
+            "$assignedByUser",
+            {
+              _id: "$assignedByUser._id",
+              name: "$assignedByUser.full_name",
+              email: "$assignedByUser.email",
+            },
+            null
+          ]
+        },
+        unassignedByUser: {
+          $cond: [
+            "$unassignedByUser",
+            {
+              _id: "$unassignedByUser._id",
+              name: "$unassignedByUser.full_name",
+              email: "$unassignedByUser.email",
+            },
+            null
+          ]
+        }
+      }
+    }
   ]);
 }
 
@@ -51,7 +101,7 @@ async function getActiveAssignments(animalId) {
  * - Closes existing active assignment of same role
  * - Creates new assignment
  */
-async function assignUserToAnimal({ animalId, workerId, role }) {
+async function assignUserToAnimal({ animalId, workerId, role, assignedBy }) {
   // Validate ObjectIds
   if (!mongoose.Types.ObjectId.isValid(animalId) || !mongoose.Types.ObjectId.isValid(workerId)) {
     throw new Error('Invalid animalId or workerId');
@@ -79,7 +129,7 @@ async function assignUserToAnimal({ animalId, workerId, role }) {
     }
   );
 
-  // Create new assignment
+  // Create new assignment with assignedBy tracking
   return AnimalAssignment.create({
     animalId: animalObjectId,
     workerId: workerObjectId,
@@ -87,13 +137,14 @@ async function assignUserToAnimal({ animalId, workerId, role }) {
     farmId: animal.farmId, // Add farmId from animal
     assignedAt: now(),
     unassignedAt: null,
+    assignedBy: assignedBy || null, // Track who made the assignment
   });
 }
 
 /**
  * Unassign a specific assignment (soft close) using domain identity
  */
-async function unassignAnimalUser({animalId, userId, role }) {
+async function unassignAnimalUser({animalId, userId, role, unassignedBy }) {
   // Validate ObjectIds
   if (!mongoose.Types.ObjectId.isValid(animalId) || 
       !mongoose.Types.ObjectId.isValid(userId)) {
@@ -103,7 +154,7 @@ async function unassignAnimalUser({animalId, userId, role }) {
   const animalObjectId = new mongoose.Types.ObjectId(animalId);
   const userObjectId = new mongoose.Types.ObjectId(userId);
 
-  console.log('----------unassigning:', { animalId, userId, role });
+  console.log('----------unassigning:', { animalId, userId, role, unassignedBy });
 
   const result = await AnimalAssignment.findOneAndUpdate(
     {
@@ -113,7 +164,10 @@ async function unassignAnimalUser({animalId, userId, role }) {
       unassignedAt: null, // Only active assignments
     },
     {
-      $set: { unassignedAt: now() },
+      $set: { 
+        unassignedAt: now(),
+        unassignedBy: unassignedBy || null // Track who made the unassignment
+      },
     },
     { new: true }
   );

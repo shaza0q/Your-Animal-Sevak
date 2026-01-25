@@ -29,6 +29,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { updateAnimalData, getVaccineData, getDiseaseData } from "@/api"
+import { useHistoryCache } from "@/components/history/AnimalHistoryPage";
 
 // Types
 type UpdateType = "Health" | "Weight" | "Vaccination" | "Breeding" | "Sale";
@@ -131,6 +132,36 @@ interface FormData {
 
 interface FormErrors {
   [key: string]: string;
+}
+
+// Type for form input values that matches FormData field types
+type FormInputValue = 
+  | string 
+  | number 
+  | Date 
+  | File 
+  | null;
+
+// Type for API payload
+interface AnimalUpdatePayload {
+  animalId: string;
+  date: string;
+  updateType: UpdateType;
+  status: AnimalStatus;
+  diseaseName?: string;
+  riskLevel?: RiskLevel;
+  weight?: number;
+  vaccineName?: string;
+  nextVaccineDate?: string;
+  maleAnimalId?: string;
+  expectedDeliveryDate?: string;
+  price?: number;
+  buyerName?: string;
+  buyerEmail?: string;
+  buyerContact?: string;
+  buyerAddress?: string;
+  notes?: string;
+  mediaFile?: File;
 }
 
 // Mock API data
@@ -248,6 +279,7 @@ const compressImage = (file: File, maxWidth = 1200, quality = 0.8): Promise<File
 
 const AnimalUpdate = () => {
   const { toast } = useToast();
+  const { invalidateCache } = useHistoryCache();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -281,7 +313,7 @@ const AnimalUpdate = () => {
     };
 
     fetchMasterData();
-  }, []);
+  }, [toast]);
 
 
   // Get the derived/auto-set status based on update type
@@ -305,8 +337,8 @@ const AnimalUpdate = () => {
   // Check if status should be shown for current update type
   const shouldShowStatusSelector = formData.updateType === "Health";
 
-  // Handle input changes
-  const handleInputChange = (field: keyof FormData, value: any) => {
+  // Handle input changes with proper typing
+  const handleInputChange = <K extends keyof FormData>(field: K, value: FormData[K]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     
     // Clear related errors
@@ -492,7 +524,7 @@ const AnimalUpdate = () => {
       finalStatus = "Healthy"; // This would be inherited from DB in real implementation
     }
 
-    const payload: any = {
+    const payload: AnimalUpdatePayload = {
       animalId: formData.animalId,
       date: format(formData.date, "yyyy-MM-dd"),
       updateType: formData.updateType,
@@ -600,6 +632,8 @@ const AnimalUpdate = () => {
         setUploadProgress(0);
         setIsSubmitting(false);
       }, 500);
+
+      invalidateCache();
     } catch (error) {
       toast({
         title: "Submission Failed",

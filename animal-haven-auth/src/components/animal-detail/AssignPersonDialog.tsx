@@ -23,6 +23,7 @@ interface SearchFarmUser {
 import { useToast } from "@/hooks/use-toast";
 import { searchFarmUsers } from "@/api/searchFarmUsers";
 import { assignAnimalUser } from "@/api/assignAnimalUser";
+import { useHistoryCache } from "@/components/history/AnimalHistoryPage";
 import { unassignAnimalUser } from "@/api/unassignAnimalUser";
 
 interface AssignPersonDialogProps {
@@ -49,6 +50,8 @@ const AssignPersonDialog = ({
   onAssignmentChange,
 }: AssignPersonDialogProps) => {
   const { toast } = useToast();
+  const { invalidateCache } = useHistoryCache();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchFarmUser[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -104,6 +107,8 @@ const AssignPersonDialog = ({
       
       handleClose();
       onAssignmentChange?.();
+
+      invalidateCache();
     } catch (error) {
       const message = error instanceof Error ? error.message : "Assignment failed";
       toast({

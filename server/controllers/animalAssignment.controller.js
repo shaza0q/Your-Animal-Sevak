@@ -23,6 +23,7 @@ async function assignUser(req, res) {
   try{
     const { animalId } = req.params;
     const { workerId, role } = req.body;
+    const assignedBy = req.user.id; // Current user making the assignment
   
     if (!workerId || !role) {
       return res.status(400).json({
@@ -40,6 +41,7 @@ async function assignUser(req, res) {
       animalId,
       workerId,
       role,
+      assignedBy, // Pass who made the assignment
     });
   
     return res.status(201).json({
@@ -63,6 +65,7 @@ async function unassignUser(req, res) {
   // assignmentId is actually the userId in our URL structure
   // We need to determine the role from the request body or query
   const { role } = req.body;
+  const unassignedBy = req.user.id; // Current user making the unassignment
 
   if (!role) {
     return res.status(400).json({
@@ -70,12 +73,13 @@ async function unassignUser(req, res) {
     });
   }
 
-  console.log('-------unassign request:', { animalId, userId: assignedUserId, role });
+  console.log('-------unassign request:', { animalId, userId: assignedUserId, role, unassignedBy });
 
   const result = await assignmentService.unassignAnimalUser({ 
     animalId, 
     userId: assignedUserId, 
-    role 
+    role,
+    unassignedBy // Pass who made the unassignment
   });
 
   console.log('----------result from controller', result);

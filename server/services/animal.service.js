@@ -357,6 +357,14 @@ async function getAnimalDetail({ farmId, animalId }) {
   return animal || null;
 }
 
+/**
+ * @param {Object} params
+ * @param {string} params.animalId
+ * @param {number} [params.page=1]
+ * @param {number} [params.limit=5]
+ *
+ * @returns {Promise<import("../types/dtos/animal-history.dto").AnimalHistoryResponseDto>}
+ */
 async function getAnimalHistory({ animalId, page = 1, limit = 5 }) {
   if (!mongoose.Types.ObjectId.isValid(animalId)) {
     return {
@@ -365,37 +373,99 @@ async function getAnimalHistory({ animalId, page = 1, limit = 5 }) {
     };
   }
 
-  limit = Math.min(limit, 15);
-
+  limit = Math.min(limit, 20);
   const animalObjectId = new mongoose.Types.ObjectId(animalId);
   const skip = (page - 1) * limit;
 
-  const assignmentEventsPipeline = [
-    { $match: { animalId: animalObjectId } },
-
+  /* -------------------- ASSIGNMENT EVENTS -------------------- */
+  const assignmentPipeline = [
     {
-      $lookup: {
-        from: "newusers", // ⚠️ verify collection name
-        localField: "userId",
-        foreignField: "_id",
-        as: "user",
+      $match: {
+        animalId: animalObjectId,
+        workerId: { $ne: null },
+        role: { $ne: null },
       },
     },
-    { $unwind: "$user" },
+
+    // Subject (assigned person)
+    {
+      $lookup: {
+        from: "newusers",
+        localField: "workerId",
+        foreignField: "_id",
+        as: "workerUser",
+      },
+    },
+    {
+      $unwind: {
+        path: "$workerUser",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+
+    // Actor (assigned by)
+    {
+      $lookup: {
+        from: "newusers",
+        localField: "assignedBy",
+        foreignField: "_id",
+        as: "assignedByUser",
+      },
+    },
+    {
+      $unwind: {
+        path: "$assignedByUser",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+
+    // Actor (unassigned by)
+    {
+      $lookup: {
+        from: "newusers",
+        localField: "unassignedBy",
+        foreignField: "_id",
+        as: "unassignedByUser",
+      },
+    },
+    {
+      $unwind: {
+        path: "$unassignedByUser",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
 
     {
       $project: {
         events: [
           {
+            _id: "$_id",
             type: "ASSIGNED",
             role: "$role",
-            user: { _id: "$user._id", name: "$user.name" },
+            user: {
+              _id: "$workerUser._id",
+              name: { $ifNull: ["$workerUser.full_name", "Unknown"] },
+            },
+            createdBy: {
+              _id: "$assignedByUser._id",
+              name: { $ifNull: ["$assignedByUser.full_name", "Unknown"] },
+            },
             at: "$assignedAt",
           },
           {
+            _id: {
+              $concat: ["UNASSIGNED_", { $toString: "$_id" }],
+            },
             type: "UNASSIGNED",
             role: "$role",
-            user: { _id: "$user._id", name: "$user.name" },
+            user: {
+              _id: "$workerUser._id",
+              name: { $ifNull: ["$workerUser.full_name", "Unknown"] },
+            },
+            createdBy: {
+              _id: "$unassignedByUser._id",
+              name: { $ifNull: ["$unassignedByUser.full_name", "Unknown"] },
+            },
             at: "$unassignedAt",
           },
         ],
@@ -407,123 +477,122 @@ async function getAnimalHistory({ animalId, page = 1, limit = 5 }) {
     { $replaceRoot: { newRoot: "$events" } },
   ];
 
-  const animalCreatedPipeline = [
+  /* -------------------- ANIMAL CREATED -------------------- */
+  const createdPipeline = [
     { $match: { _id: animalObjectId } },
     {
       $project: {
+        _id: { $concat: ["CREATED_", { $toString: "$_id" }] },
         type: "CREATED",
         at: "$createdAt",
-      },
-    },
-  ];
-
-  const statusChangePipeline = [
-    { $match: { _id: animalObjectId } },
-
-    {
-      $unwind: {
-        path: "$statusHistory",
-        preserveNullAndEmptyArrays: false,
-      },
-    },
-
-    {
-      $project: {
-        type: "STATUS_CHANGED",
-        status: {
-          from: "$statusHistory.from",
-          to: "$statusHistory.to",
-          reason: "$statusHistory.reason",
+        createdBy: {
+          _id: null,
+          name: "System",
         },
-        at: "$statusHistory.changedAt",
+        animalId: "$_id",
       },
     },
   ];
 
-  const healthEventsPipeline = [
-    {
-      $match: {
-        animalId: animalObjectId,
-        occurredAt: { $ne: null },
-      },
-    },
+  /* -------------------- ANIMAL UPDATES -------------------- */
+  const updatePipeline = [
+    { $match: { animalId: animalObjectId } },
 
     {
       $lookup: {
-        from: "newusers", // ⚠️ verify collection name
-        localField: "recordedBy",
+        from: "newusers",
+        localField: "staffId",
         foreignField: "_id",
-        as: "user",
+        as: "staffUser",
       },
     },
     {
       $unwind: {
-        path: "$user",
+        path: "$staffUser",
         preserveNullAndEmptyArrays: true,
       },
     },
 
     {
       $project: {
-        type: "HEALTH_EVENT",
+        _id: "$_id",
+        at: "$date",
+        createdBy: {
+          _id: "$staffUser._id",
+          name: { $ifNull: ["$staffUser.full_name", "Unknown"] },
+        },
+        type: {
+          $switch: {
+            branches: [
+              { case: { $eq: ["$updateType", "Weight"] }, then: "WEIGHT_UPDATED" },
+              { case: { $eq: ["$updateType", "Vaccination"] }, then: "VACCINATION_ADDED" },
+              { case: { $eq: ["$updateType", "Health"] }, then: "HEALTH_EVENT" },
+            ],
+            default: "HEALTH_EVENT",
+          },
+        },
+        weight: {
+          previous: "$previousWeight",
+          current: "$weight",
+          unit: "kg",
+        },
         health: {
-          eventType: "$type",
-          description: "$description",
-        },
-        user: {
-          _id: "$user._id",
-          name: "$user.name",
-        },
-        at: "$occurredAt",
-      },
-    },
-  ];
-
-  /** @type {import('mongoose').PipelineStage[]} */
-  const historyPipeline = [
-    ...assignmentEventsPipeline,
-
-    { 
-      $unionWith: { 
-        coll: "animals", 
-        pipeline: animalCreatedPipeline 
-      } 
-    },
-    { 
-      $unionWith: { 
-        coll: "animals", 
-        pipeline: statusChangePipeline 
-      } 
-    },
-
-    {
-      $unionWith: {
-        coll: "animalhealthevents",
-        pipeline: healthEventsPipeline,
-      },
-    },
-
-    { $sort: { at: -1 } },
-
-    {
-      $facet: {
-        data: [{ $skip: skip }, { $limit: limit }],
-        totalCount: [{ $count: "count" }],
-      },
-    },
-
-    {
-      $project: {
-        data: 1,
-        total: {
-          $ifNull: [{ $arrayElemAt: ["$totalCount.count", 0] }, 0],
+          eventType: "$updateType",
+          description: "$notes",
+          severity: "$riskLevel",
+          diseaseName: "$diseaseName",
+          vaccineName: "$vaccineName",
         },
       },
     },
   ];
 
+  /* -------------------- FINAL UNION -------------------- */
+  const historyPipeline = [];
+  
+  // Add assignment pipeline stages
+  for (const stage of assignmentPipeline) {
+    historyPipeline.push(stage);
+  }
+  
+  // Add union with animals
+  historyPipeline.push({
+    $unionWith: {
+      coll: "animals",
+      pipeline: createdPipeline,
+    }
+  });
+  
+  // Add union with animalupdates
+  historyPipeline.push({
+    $unionWith: {
+      coll: "animalupdates",
+      pipeline: updatePipeline,
+    }
+  });
+
+  // Add sort
+  historyPipeline.push({ $sort: { at: -1 } });
+
+  // Add facet
+  historyPipeline.push({
+    $facet: {
+      data: [{ $skip: skip }, { $limit: limit }],
+      totalCount: [{ $count: "count" }],
+    }
+  });
+
+  // Add final projection
+  historyPipeline.push({
+    $project: {
+      data: 1,
+      total: { $ifNull: [{ $arrayElemAt: ["$totalCount.count", 0] }, 0] },
+    }
+  });
+
+  // @ts-ignore
   const result = await AnimalAssignment.aggregate(historyPipeline);
-  const { data, total } = result[0] || { data: [], total: 0 };
+  const { data = [], total = 0 } = result[0] || {};
 
   return {
     data,
@@ -531,7 +600,7 @@ async function getAnimalHistory({ animalId, page = 1, limit = 5 }) {
       page,
       limit,
       total,
-      hasNext: page * limit < total,
+      hasNext: skip + limit < total,
     },
   };
 }

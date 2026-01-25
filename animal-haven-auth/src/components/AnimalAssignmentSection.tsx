@@ -150,6 +150,7 @@ const AnimalAssignmentSection = ({
   isOwner = false, // Add isOwner prop to enforce owner-only unassign
 }: AnimalAssignmentSectionProps & { isOwner?: boolean }) => {
   const { toast } = useToast();
+
   const [assignments, setAssignments] = useState<AssignmentWithDetails[]>([]);
   const [loadingAssignments, setLoadingAssignments] = useState(true);
   const [loadingError, setLoadingError] = useState<string | null>(null);
