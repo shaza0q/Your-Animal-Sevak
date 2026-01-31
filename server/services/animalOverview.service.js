@@ -1,15 +1,23 @@
 const mongoose = require("mongoose");
 const Animal = require("../models/animal");
 
-async function getAnimalOverviewByFarm(farmId) {
+async function getAnimalOverviewByFarm(farmId, state) {
   const farmObjectId = new mongoose.Types.ObjectId(farmId);
+
+  // First, let's check what animals exist for this farm
+  const allAnimals = await Animal.find({ farmId: farmObjectId, isDeleted: false });
+  console.log('----------Backend: All animals for farm:', allAnimals.length, allAnimals.map(a => ({ _id: a._id, animalType: a.animalType, status: a.status })));
+
+  // Normalize state to match database format (capitalize first letter)
+  const normalizedState = state.charAt(0).toUpperCase() + state.slice(1).toLowerCase();
+  console.log('----------Backend: Normalized state:', normalizedState);
 
   const categories = await Animal.aggregate(
     [
       {
         $match: {
           farmId: farmObjectId,
-          status: "Active",
+          status: normalizedState, // Use normalized state
           isDeleted: false,
         },
       },
@@ -60,12 +68,18 @@ async function getAnimalOverviewByFarm(farmId) {
     { allowDiskUse: true }
   );
 
-  return {
+  console.log('----------Backend: Aggregated categories:', categories);
+
+  const result = {
     farmId,
     categories,
   };
+  
+  console.log('----------Backend: Final result:', result);
+  return result;
 }
 
 module.exports = {
-  getAnimalOverviewByFarm,
+  getAnimalOverviewByFarm
+
 };

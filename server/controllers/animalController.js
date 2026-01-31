@@ -287,11 +287,12 @@ const updateAnimalData = async (req, res) => {
 const getAnimalOverview = async(req, res) => {
   try{
     const { farmId } = req.params;
+    const { state } = req.query;
     if (!farmId) {
       return res.status(400).json({ message: "farmId is required" });
     }
 
-    const data = await getAnimalOverviewByFarm(farmId);
+    const data = await getAnimalOverviewByFarm(farmId, state);
 
     return res.json(data);
   } catch (error) {
