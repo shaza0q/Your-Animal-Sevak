@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
-const { deathEventSchema } = require("./deathEventSchema");
-const { postDeathHandlingSchema } = require("./postDeathHandlingSchema");
-const { legalFinancialSchema } = require("./legalFinancialSchema");
+const { deathEventSchema } = require("./deathEvent.schema");
+const { postDeathHandlingSchema } = require("./postDeathHandling.schema");
+const { legalFinancialSchema } = require("./legalFinancial.schema");
 
 const deathRecordSchema = new mongoose.Schema({
   event: { type: deathEventSchema, required: true },
@@ -12,4 +12,6 @@ const deathRecordSchema = new mongoose.Schema({
   notes: String
 }, { _id: false });
 
-module.exports = mongoose.model("DeathRecord", deathRecordSchema);
+module.exports = {
+  deathRecordSchema
+}

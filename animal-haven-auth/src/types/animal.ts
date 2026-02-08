@@ -5,7 +5,7 @@ export interface Animal {
   breed: string;
   gender: "male" | "female";
   age: string;
-  status: "healthy" | "injured" | "diseased" | "pregnant" | "vaccined" | "sold";
+  status: "healthy" | "injured" | "diseased" | "pregnant" | "vaccined" | "sold" | "deceased";
   tagNumber: string;
   weight?: string;
   lastCheckup?: string;

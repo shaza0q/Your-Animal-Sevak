@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -29,10 +29,12 @@ interface Breed {
 const AddAnimal = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { farmId } = useParams<{ 
+      farmId: string; 
+  }>();
+  const preselectedFarmId = location.state?.farmId || farmId || "";
 
-  const preselectedFarmId = location.state?.farmId || "";
-
-  const [farmData, setFarmData] = useState<[] | null>()
+  const [farmData, setFarmData] = useState<Array<{ _id: string; name: string }> | null>(null)
   const [breedData, setBreedData] = useState<[Breed] | null>()
   const [availableBreeds, setAvailableBreeds] = useState<string[] | null>()
   
@@ -59,7 +61,7 @@ const AddAnimal = () => {
     
         setFarmData(response);
 
-        if (preselectedFarmId && response.some((f: any) => f._id === preselectedFarmId)) {
+        if (preselectedFarmId && response.some((f) => f._id === preselectedFarmId)) {
           setFormData(prev => ({ ...prev, farmId: preselectedFarmId }));
         }
   
@@ -72,7 +74,7 @@ const AddAnimal = () => {
     
     getFarms()
 
-  }, [navigate])
+  }, [navigate, preselectedFarmId])
 
 
   useEffect(() => {
@@ -206,9 +208,10 @@ const AddAnimal = () => {
                   <Select
                     value={formData.farmId}
                     onValueChange={(value) => handleInputChange("farmId", value)}
+                    disabled={!!preselectedFarmId}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select Farm Name" />
+                      <SelectValue placeholder={preselectedFarmId ? "Preselected farm" : "Select Farm Name"} />
                     </SelectTrigger>
                     <SelectContent>
                       {farmData && farmData.length > 0 ? (
@@ -222,6 +225,11 @@ const AddAnimal = () => {
                       )}
                     </SelectContent>
                   </Select>
+                  {preselectedFarmId && (
+                    <p className="text-xs text-muted-foreground">
+                      Preselected: {farmData?.find((f) => f._id === preselectedFarmId)?.name || 'Loading farm name...'}
+                    </p>
+                  )}
                 </div>
 
                 {/* Animal ID */}

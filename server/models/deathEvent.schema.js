@@ -34,4 +34,6 @@ const deathEventSchema = new mongoose.Schema({
   confirmedAt: Date
 }, { _id: false });
 
-module.exports = mongoose.model("DeathEvent", deathEventSchema);
+module.exports = {
+  deathEventSchema
+}

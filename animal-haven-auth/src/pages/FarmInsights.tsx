@@ -15,7 +15,10 @@ import {
   Activity,
   PawPrint,
   PieChart as PieChartIcon,
-  BarChart3
+  BarChart3,
+  DollarSignIcon,
+  SkullIcon,
+  Archive
 } from "lucide-react";
 import {
   ChartContainer,
@@ -203,13 +206,23 @@ const FarmInsights = () => {
                 <CardTitle className="text-xl">🌿 {farmData.name}</CardTitle>
                 <CardDescription>Your animals are healthy and thriving</CardDescription>
               </div>
-              <Button 
-                onClick={() => navigate(`/farms/${farmData.id}/animals`)}
-                className="gap-2"
-              >
-                <PawPrint className="h-4 w-4" />
-                View Animals
-              </Button>
+              
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => navigate(`/farms/${farmData.id}/animals`)}
+                  className="gap-2"
+                >
+                  <PawPrint className="h-4 w-4" />
+                  View Animals
+                </Button>
+
+                <Button className="gap-2" variant="outline"
+                  onClick={() => navigate(`/farms/${farmData.id}/animals?state=deceased`)}
+                >
+                  <SkullIcon className="h-4 w-4" />
+                  Dead Animals R.I.P
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -548,19 +561,33 @@ const FarmInsights = () => {
             </CardHeader>
 
             <CardContent className="grid grid-cols-2 gap-3">
-              <Button className="h-auto flex-col gap-2 py-6" variant="default" onClick = { () => navigate("/addAnimal", { state: { farmId: farmId } })}>
+              <Button className="h-auto flex gap-2 py-6" variant="default" onClick = { () => navigate("/addAnimal", { state: { farmId: farmId } })}>
                 <Plus className="h-6 w-6" />
                 <span>Add Animal</span>
               </Button>
               
-              <Button className="h-auto flex-col gap-2 py-6" variant="outline">
+              <Button className="h-auto flex gap-2 py-6" variant="outline">
                 <FileText className="h-6 w-6" />
                 <span>Health Records</span>
               </Button>
 
-              <Button className="h-auto flex-col gap-2 py-6" variant="outline">
+              <Button className="h-auto flex gap-2 py-6" variant="outline">
                 <Bell className="h-6 w-6" />
                 <span>All Alerts</span>
+              </Button>
+
+              <Button className="h-auto flex gap-2 py-6" variant="outline"
+                onClick={() => navigate(`/farms/${farmData.id}/animals?state=deceased`)}
+              >
+                <SkullIcon className="h-6 w-6" />
+                Dead Animals R.I.P
+              </Button>
+
+              <Button className="h-auto flex gap-2 py-6" variant="outline"
+                onClick={() => navigate(`/farms/${farmData.id}/animals?state=sold`)}
+              >
+                <DollarSignIcon className="h-6 w-6" />
+                Sold Animals
               </Button>
             </CardContent>
           </Card>

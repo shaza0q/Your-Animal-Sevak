@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, User, Mail, Phone, Shield, Plus, FileText, Bell, Users, TrendingUp, MapPin, AlertTriangle, Heart, CheckCircle2, Activity } from "lucide-react";
+import { LogOut, User, Mail, Phone, Shield, Plus, FileText, Bell, Users, TrendingUp, MapPin, AlertTriangle, Heart, CheckCircle2, Activity, Skull } from "lucide-react";
 import { getUserData } from "@/api/getUserData"
 import { handleLogout } from "@/api/handleLogout"
 import { getHealthData } from "@/api/getHealthData"
@@ -212,6 +212,40 @@ const Dashboard = () => {
                       </Button>
                     </div>
                   ))}
+                </CardContent>
+              </Card>
+
+               {/* Death Cases Compliance Widget */}
+              <Card className="md:col-span-2 border-primary/20">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Skull className="h-5 w-5 text-primary" />
+                        Death Cases Compliance
+                      </CardTitle>
+                      <CardDescription>Pending tasks and recent mortality records</CardDescription>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => navigate("/compliance/death-cases")}>
+                      View All
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid sm:grid-cols-3 gap-4">
+                    <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-center">
+                      <p className="text-2xl font-bold text-amber-600">3</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">My Tasks</p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20 text-center">
+                      <p className="text-2xl font-bold text-blue-600">12</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Pending Review</p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-center">
+                      <p className="text-2xl font-bold text-emerald-600">98%</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Compliance</p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>

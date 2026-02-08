@@ -20,4 +20,6 @@ const postDeathHandlingSchema = new mongoose.Schema({
   disposalCertificateId: String
 }, { _id: false });
 
-module.exports = mongoose.model("PostDeathHandling", postDeathHandlingSchema);
+module.exports = {
+  postDeathHandlingSchema
+}

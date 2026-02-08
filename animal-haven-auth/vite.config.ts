@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    historyApiFallback: true, // ✅ Add this for SPA routing
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {

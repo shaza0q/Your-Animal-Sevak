@@ -18,4 +18,4 @@ const deceasedAnimalSnapshotSchema = new mongoose.Schema({
   reproductiveStatus: String
 }, { _id: false });
 
-module.exports = mongoose.model("DeceasedAnimalSnapshot", deceasedAnimalSnapshotSchema);
+module.exports = { deceasedAnimalSnapshotSchema };

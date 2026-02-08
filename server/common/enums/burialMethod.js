@@ -1,4 +1,4 @@
-export const DISPOSAL_METHOD = [
+const DISPOSAL_METHOD = [
   "burial",
   "cremation",
   "rendering",
@@ -7,3 +7,5 @@ export const DISPOSAL_METHOD = [
   "landfill",
   "other"
 ];
+
+module.exports = { DISPOSAL_METHOD };

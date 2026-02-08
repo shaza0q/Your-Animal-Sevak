@@ -33,3 +33,7 @@ const medicalContextSchema = new mongoose.Schema({
   lastProductionDate: Date,
   productionUnit: String
 }, { _id: false });
+
+module.exports = {
+  medicalContextSchema
+}

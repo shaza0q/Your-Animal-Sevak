@@ -7,7 +7,7 @@ const cloudinary = require('cloudinary').v2
 const fs = require('fs')
 const dotenv = require('dotenv')
 const { getAnimalOverviewByFarm } = require('../services/animalOverview.service')
-const { getAnimalsByType, getAnimalDetail, getAnimalHistory } = require('../services/animal.service')
+const { getAnimalsByType, getAnimalDetail, getAnimalHistory, searchAnimal, getAnimalAbstractData } = require('../services/animal.service')
 dotenv.config()
 
 const upload = multer({dest: "uploads/"})
@@ -365,8 +365,8 @@ const getAnimalDetailController = async(req, res) => {
   }
 }
 
-const getAnimalHistoryController = async(req, res) => {
-  try{
+const getAnimalHistoryController = async (req, res) => {
+  try {
     const { animalId } = req.params;
     const { page = 1, limit = 5 } = req.query;
 
@@ -375,27 +375,99 @@ const getAnimalHistoryController = async(req, res) => {
       page: parseInt(page),
       limit: parseInt(limit)
     })
-    
-    if(!animalHistory){
+
+    if (!animalHistory) {
       return res.status(404).json({ message: "Animal not found" });
     }
-  
+
     console.log("----------------Animal history:", animalHistory);
     return res.json(animalHistory);
 
-  }
-  catch(error){
+  } catch (error) {
     return res
-    .status(500)
-    .json({ message: "Failed to fetch animal history" })
+      .status(500)
+      .json({ message: "Failed to fetch animal history" })
   }
 }
-module.exports = { 
-    addAnimalData,
-    updateAnimalData,
-    upload,
-    getAnimalOverview,
-    listAnimalsByType,
-    getAnimalDetailController,
-    getAnimalHistoryController
+
+const searchAnimalController = async (req, res) => {
+  try {
+    console.log('-----------------------controller animal query', req.query);
+    const { q, animalType, breed, gender, excludeAnimalIds } = req.query;
+    
+    // Get farmId from farmUser collection
+    const FarmUser = require('../models/farmUser');
+    const userId = req.user.id || req.user._id;
+    
+    const farmUser = await FarmUser.findOne({ userId });
+    if (!farmUser) {
+      return res.status(403).json({ message: "User not associated with any farm" });
+    }
+    
+    const farmId = farmUser.farmId;
+    console.log('----- found farmId:', farmId);
+
+    const animals = await searchAnimal({
+      farmId,
+      q: q || '',
+      animalType,
+      breed,
+      gender,
+      excludeAnimalIds: excludeAnimalIds ? excludeAnimalIds.split(',') : []
+    });
+
+    res.json({
+      success: true,
+      data: animals,
+      count: animals.length
+    });
+  } catch (error) {
+    console.error('Error searching animals:', error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to search animals"
+    });
+  }
+}
+
+const getAnimalAbstract = async (req, res) => {
+  try {
+    const { animalId } = req.params;
+
+    console.log('----------animalId', animalId);
+    
+    if (!animalId) {
+      return res.status(400).json({ message: "animalId is required" });
+    }
+
+    const animalData = await getAnimalAbstractData(animalId);
+    
+    if (!animalData) {
+      return res.status(404).json({ message: "Animal not found" });
+    }
+    
+    console.log('----- getAnimalAbstractData result:', animalData);
+    return res.json({
+      success: true,
+      data: animalData
+    });
+  } catch (error) {
+    console.error('Error fetching animal abstract data:', error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch animal data"
+    });
+  }
+}
+
+module.exports = {
+  addAnimalData,
+  updateAnimalData,
+  upload,
+  getAnimalOverview,
+  listAnimalsByType,
+  getAnimalDetailController,
+  getAnimalHistoryController,
+  searchAnimalController,
+  getAnimalAbstract
 };

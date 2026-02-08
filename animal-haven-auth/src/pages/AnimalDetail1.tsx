@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { FarmUser } from "@/types/animal";
@@ -24,6 +24,7 @@ import { AnimalHistoryEvent } from "@/types/animal-history";
 import { RecentHistory } from "@/components/history/RecentHistory";
 import { fetchAnimalHistory } from "@/api/fetchAnimalHistory";
 import { useHistoryCache } from "@/components/history/AnimalHistoryPage";
+import { FileText, Skull } from "lucide-react";
 
 const AnimalDetail = () => {
   const navigate = useNavigate();
@@ -243,6 +244,32 @@ const AnimalDetail = () => {
         </div>
 
         <HealthActions />
+
+        {/*compliance actions*/}
+        <Card className="border-destructive/20 bg-destructive/5">
+          <CardHeader>
+            <CardTitle className="text-destructive flex items-center gap-2 text-lg">
+              <Skull className="h-5 w-5" />
+              Compliance Actions
+            </CardTitle>
+            <CardDescription>Legal and mortality reporting</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-3">
+            <Button 
+              variant="destructive"
+              className="gap-2"
+              onClick={() => navigate(`/compliance/death-cases/new/${animalId}`)}
+            >
+              <Skull className="h-4 w-4" />
+              Report Death
+            </Button>
+            <Button variant="outline" className="gap-2">
+              <FileText className="h-4 w-4" />
+              View Legal Records
+            </Button>
+          </CardContent>
+        </Card>
+
 
         <RecentHistory
           events={historyEvents}

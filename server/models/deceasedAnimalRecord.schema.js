@@ -2,10 +2,10 @@
 // MAIN SCHEMA
 // ====================
 const mongoose = require("mongoose");
-const { deceasedAnimalSnapshotSchema } = require("./deceasedAnimalSnapshotSchema");
-const { deathRecordSchema } = require("./deathRecordWrapper");
-const { medicalContextSchema } = require("./medicalRecordContextSchema");
-const { auditMetadataSchema } = require("./auditMetadataSchema");
+const { deceasedAnimalSnapshotSchema } = require("./deceasedAnimalSnapshot.schema");
+const { deathRecordSchema } = require("./deathRecord.schema");
+const { medicalContextSchema } = require("./medicalRecordContext.schema");
+const { auditMetadataSchema } = require("./auditMetadata.schema");
 const { DECEASED_WORKFLOW_STATUS } = require("@server/common/enums/workflowDeceasedAnimal");
 
 const deceasedAnimalRecordSchema = new mongoose.Schema({
@@ -133,7 +133,7 @@ deceasedAnimalRecordSchema.pre("save", function(next) {
     // Days since death (only if not already set)
     if (!this.daysSinceDeath) {
       const deathDate = this.deathRecord.event.dateOfDeath;
-      const days = Math.floor((new Date() - deathDate) / (1000 * 60 * 60 * 24));
+      const days = Math.floor((new Date().getTime() - deathDate.getTime()) / (1000 * 60 * 60 * 24));
       this.daysSinceDeath = days;
     }
     
@@ -190,7 +190,7 @@ deceasedAnimalRecordSchema.pre("findOneAndUpdate", function(next) {
   ];
   
   // Check if update touches anything outside allowed paths
-  if (operation.$set) {
+  if (operation && '$set' in operation && operation.$set) {
     const updatePaths = Object.keys(operation.$set);
     const hasIllegalUpdate = updatePaths.some(path => 
       !allowedPaths.some(allowed => path.startsWith(allowed))
@@ -239,6 +239,9 @@ deceasedAnimalRecordSchema.index({
 // ====================
 // STATIC METHODS (Business Logic)
 // ====================
+/**
+ * @this {mongoose.Model<any>}
+ */
 deceasedAnimalRecordSchema.statics.findForTable = function(filters = {}) {
   const {
     farmId,
@@ -260,7 +263,8 @@ deceasedAnimalRecordSchema.statics.findForTable = function(filters = {}) {
   if (causeOfDeath) match["deathRecord.event.causeOfDeath"] = causeOfDeath;
   if (type) match["snapshot.type"] = type;
   
-  return this.aggregate([
+  const Model = this; // Store 'this' context
+  return Model.aggregate([
     { $match: match },
     { $sort: { "deathRecord.event.dateOfDeath": -1 } },
     { $skip: skip },
@@ -290,8 +294,12 @@ deceasedAnimalRecordSchema.statics.findForTable = function(filters = {}) {
   ]);
 };
 
+/**
+ * @this {mongoose.Model<any>}
+ */
 deceasedAnimalRecordSchema.statics.getMortalityStats = function(farmId, startDate, endDate) {
-  return this.aggregate([
+  const Model = this; // Store 'this' context
+  return Model.aggregate([
     {
       $match: {
         farmId: new mongoose.Types.ObjectId(farmId),

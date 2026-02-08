@@ -109,6 +109,24 @@ export const mockAnimals: Animal[] = [
     farmId: "farm1",
     farmName: "Sunshine Valley Farm"
   },
+   {
+    id: "animal13",
+    name: "Daisy Mae",
+    type: "Cow",
+    breed: "Jersey",
+    gender: "female",
+    age: "2 years",
+    status: "deceased",
+    tagNumber: "SV-013",
+    weight: "420 kg",
+    lastCheckup: "2025-09-15",
+    farmId: "farm1",
+    farmName: "Sunshine Valley Farm",
+    caretakerId: "user3",
+    caretakerName: "Emma Johnson",
+    veterinarianId: "user4",
+    veterinarianName: "Dr. Sarah Wilson"
+   },
   {
     id: "animal8",
     name: "Luna",

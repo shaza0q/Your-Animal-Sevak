@@ -2,6 +2,88 @@ const mongoose = require("mongoose");
 const Animal = require("../models/animal");
 const AnimalAssignment = require("../models/animalAssignment");
 
+async function searchAnimal({ farmId, q, animalType, breed, gender, excludeAnimalIds = [] }) {
+  console.log('----- searchAnimal called with:', {
+    farmId, q, animalType, breed, gender, excludeAnimalIds
+  });
+  
+  // Validate ObjectId
+  if (!mongoose.Types.ObjectId.isValid(farmId)) {
+    console.log('----- Invalid farmId:', farmId);
+    return [];
+  }
+
+  const farmObjectId = new mongoose.Types.ObjectId(farmId);
+
+  const matchStage = {
+    farmId: farmObjectId,
+    isDeleted: false,
+  };
+
+  if (animalType) {
+    matchStage.animalType = animalType;
+  }
+
+  if (breed) {
+    matchStage.breed = breed;
+  }
+
+  if (gender) {
+    matchStage.gender = gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase();
+  }
+
+  if (excludeAnimalIds.length) {
+    // Filter out invalid ObjectIds
+    const validExcludeIds = excludeAnimalIds.filter(id => mongoose.Types.ObjectId.isValid(id));
+    matchStage._id = {
+      $nin: validExcludeIds.map(id => new mongoose.Types.ObjectId(id)),
+    };
+  }
+
+  console.log('----- searchAnimal matchStage:', matchStage);
+
+  return Animal.aggregate([
+    { $match: matchStage },
+
+    ...(q
+      ? [{
+          $match: {
+            $or: [
+              { name: { $regex: q, $options: "i" } },
+              { tagNumber: { $regex: q, $options: "i" } },
+              { breed: { $regex: q, $options: "i" } },
+              { animalType: { $regex: q, $options: "i" } },
+            ],
+          },
+        }]
+      : []),
+
+    {
+      $project: {
+        _id: 1,
+        tagNumber: 1,
+        name: 1,
+        animalType: 1,
+        breed: 1,
+        gender: 1,
+        farmId: 1,
+        status: 1,
+        dateOfBirth: 1,
+        weight: 1,
+      },
+    },
+
+    { $limit: 20 },
+  ]).then(results => {
+    console.log('----- searchAnimal results:', results);
+    console.log('----- searchAnimal results count:', results.length);
+    return results;
+  }).catch(error => {
+    console.log('----- searchAnimal error:', error);
+    throw error;
+  });
+}
+
 async function getAnimalsByType({
   farmId,
   type,
@@ -15,13 +97,26 @@ async function getAnimalsByType({
   status,
 }) {
   
+  console.log('----- getAnimalsByType called with:', {
+    farmId,
+    type,
+    page,
+    limit,
+    assigned,
+    gender,
+    breed,
+    caretakerName,
+    vetName,
+    status
+  });
+  
   const farmObjectId = new mongoose.Types.ObjectId(farmId);
   const skip = (page - 1) * limit;
 
   /* STEP 1: Base match */
   const matchStage = {
     farmId: farmObjectId,
-    animalType: type,
+    animalType: { $regex: new RegExp(`^${type}$`, 'i') }, // Case-insensitive match
     isDeleted: false,
   };
 
@@ -189,6 +284,10 @@ async function getAnimalsByType({
 
   // @ts-ignore
   const [result] = await Animal.aggregate(completePipeline);
+  
+  console.log('----- getAnimalsByType result:', result);
+  console.log('----- result length:', result?.length || 0);
+  
   return result || { animals: [], meta: { page, limit, total: 0 } };
 }
 
@@ -605,5 +704,45 @@ async function getAnimalHistory({ animalId, page = 1, limit = 5 }) {
   };
 }
 
+async function getAnimalAbstractData(arg) {
+  // Accept either a plain id string/ObjectId or an options object { animalId }
+  let animalId;
+  if (!arg) {
+    // console.log('----- getAnimalAbstractData called with no argument');
+    return null;
+  }
 
-module.exports = { getAnimalsByType, getAnimalDetail, getAnimalHistory };
+  if (typeof arg === 'string' || arg instanceof mongoose.Types.ObjectId) {
+    animalId = String(arg);
+  } else if (typeof arg === 'object' && arg.animalId) {
+    animalId = String(arg.animalId);
+  } else {
+    // console.log('----- getAnimalAbstractData called with unsupported argument:', arg);
+    return null;
+  }
+
+  // console.log('----- getAnimalAbstractData resolved animalId:', animalId);
+  // console.log('----- animalId type:', typeof animalId);
+  // console.log('----- animalId length:', animalId?.length);
+
+  try {
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(animalId)) {
+      // console.log('----- invalid animalId format');
+      return null;
+    }
+
+    const animalObjectId = new mongoose.Types.ObjectId(animalId);
+    // console.log('----- querying Animal collection for _id:', animalObjectId);
+
+    const animalData = await Animal.findOne({ _id: animalObjectId });
+
+    // console.log('----- animalData result:', animalData);
+    return animalData;
+  } catch (error) {
+    console.error('Error in getAnimalAbstractData:', error);
+    throw error;
+  }
+}
+
+module.exports = { searchAnimal, getAnimalsByType, getAnimalDetail, getAnimalHistory, getAnimalAbstractData };

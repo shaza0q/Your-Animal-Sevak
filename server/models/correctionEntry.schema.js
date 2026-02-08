@@ -16,3 +16,5 @@ const correctionEntrySchema = new mongoose.Schema({
   correctionApprovedBy: String,
   correctionApprovedAt: Date
 }, { _id: false });
+
+module.exports = {correctionEntrySchema}

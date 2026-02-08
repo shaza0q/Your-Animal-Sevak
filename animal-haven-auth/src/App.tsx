@@ -20,7 +20,10 @@ import AnimalsOverview from "./pages/AnimalsOverview";
 import AnimalDetail from "./pages/AnimalDetail1";
 import AnimalsByCategory from "./pages/AnimalsByCategory";
 import AnimalHistoryPage from "./components/history/AnimalHistoryPage";
-
+import DeceasedAnimals from "./pages/DeceasedAnimals";
+import DeathCasesDashboard from "./pages/DeathCases"
+import DeathCaseDetail from "./pages/DeathCaseDetail";
+import NewDeathCase from "./pages/NewDeathCase";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -45,7 +48,13 @@ const App = () => (
             <Route path="/farms/:farmId/animals" element={<AnimalsOverview />} />
             <Route path="/farms/:farmId/animals/type/:animalType" element={<AnimalsByCategory />} />
             <Route path="/farms/:farmId/animals/:animalId" element={<AnimalDetail />} />
+            <Route path="/farms/:farmId/animals/deceased" element={<DeceasedAnimals />} />
             <Route path="/farms/:farmId/animals/:animalId/history" element={<AnimalHistoryPage />} />
+            <Route path="/compliance/death-cases" element={<DeathCasesDashboard/>}/>
+            <Route path="/compliance/death-cases/new" element={<NewDeathCase />} />
+            <Route path="/compliance/death-cases/new/:animalId" element={<NewDeathCase />} />
+            <Route path="/compliance/death-cases/:id" element={<DeathCaseDetail />} />
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

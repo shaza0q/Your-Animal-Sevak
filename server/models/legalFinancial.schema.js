@@ -17,3 +17,7 @@ const legalFinancialSchema = new mongoose.Schema({
   regulatoryReportSubmitted: Boolean,
   regulatoryReportId: String
 }, { _id: false });
+
+module.exports = {
+  legalFinancialSchema
+}
