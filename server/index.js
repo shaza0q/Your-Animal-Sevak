@@ -14,13 +14,15 @@ const app = express();
 const cors = require('cors')
 const dotenv = require('dotenv')
 const cookieParser = require('cookie-parser')
-const PORT = 8000;
 dotenv.config()
 
+const PORT = process.env.PORT || 8000;
+const MONGO_URL = process.env.MONGO_URL;
+if (!MONGO_URL) throw new Error('MONGO_URL is not set in environment');
 
-connectDB('mongodb://127.0.0.1:27017/animal-management-system')
+connectDB(MONGO_URL)
 .then(() => console.log("DB connected"))
-.catch((err) => console.log(err))
+.catch((err) => { console.log(err); process.exit(1); })
 
 
 app.use(cors(corsOptions));

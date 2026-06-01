@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+log.txt
+logs/
+
+# Build outputs
+dist/
+build/
+.next/
+
+# Vite / editor
+*.timestamp-*.mjs
+.DS_Store
