@@ -4,13 +4,13 @@ const mongoose = require('mongoose')
 const FarmSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'newUser',
+    ref: 'User',
     required: true,
   },
 
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "newUser",
+    ref: "User",
     required: true,
   },
 

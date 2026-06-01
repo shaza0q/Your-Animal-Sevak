@@ -10,7 +10,7 @@
 
 const FarmUser = require('../models/farmUser');
 const Farm = require('../models/farm');
-const newUser = require('../models/newUsers');
+const User = require('../models/user');
 const logger = require('../utils/logger');
 
 const getFarmUsers = async (req, res) => {
@@ -101,7 +101,7 @@ const assignFarmUser = async (req, res) => {
     }
 
     // 4️⃣ Ensure target user exists
-    const targetUser = await newUser.findById(userId);
+    const targetUser = await User.findById(userId);
     if (!targetUser) {
       return res.status(404).json({ message: "User not found" });
     }

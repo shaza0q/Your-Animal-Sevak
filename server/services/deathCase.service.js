@@ -4,7 +4,7 @@ const DeceasedAnimalRecord = require('../models/deceasedAnimalRecord.schema');
 
 const Animal = require('../models/animal');
 
-const newUserSchema = require('../models/newUsers');
+const User = require('../models/user');
 
 const AnimalUpdate = require('../models/animalUpdate');
 
@@ -84,7 +84,7 @@ class DeathCaseService {
 
           path: 'owner',
 
-          model: 'newUser'
+          model: 'User'
 
         }
 
@@ -128,7 +128,7 @@ class DeathCaseService {
 
 
 
-      const farmOwner = await newUserSchema.findById(farm.owner);
+      const farmOwner = await User.findById(farm.owner);
 
 
 

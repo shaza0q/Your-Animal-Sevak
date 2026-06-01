@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs')
-const newUser = require('../models/newUsers')
+const User = require('../models/user')
 const {generateToken} = require('./generateToken')
 
 const cookieOptions = {
@@ -20,7 +20,7 @@ async function registerUser(req, res){
     }
 
     try{
-        const existingUser = await newUser.findOne({email})
+        const existingUser = await User.findOne({email})
 
         if(existingUser){
             return res.status(409).json({message: "User with this email already exists"});
@@ -29,7 +29,7 @@ async function registerUser(req, res){
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        const user = new newUser({
+        const user = new User({
             full_name: fullName,
             email,
             mobile,
@@ -64,7 +64,7 @@ async function authenticateUser(req, res){
     }
 
     try{
-        const user = await newUser.findOne({email});
+        const user = await User.findOne({email});
 
         // console.log("66 user: ", user)
 

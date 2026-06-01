@@ -9,7 +9,7 @@ const animalAssignmentSchema = new mongoose.Schema({
 
   workerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "newUser",
+    ref: "User",
     default: null,
   },
 
@@ -38,13 +38,13 @@ const animalAssignmentSchema = new mongoose.Schema({
   // 👇 WHO performed the action
   assignedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "newUser",
+    ref: "User",
     default: null,
   },
 
   unassignedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "newUser",
+    ref: "User",
     default: null,
   },
 

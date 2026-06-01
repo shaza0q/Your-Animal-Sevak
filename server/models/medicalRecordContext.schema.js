@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const medicalContextSchema = new mongoose.Schema({
   lastVetVisitDate: Date,
   lastVetVisitReason: String,
-  attendingVetId: { type: mongoose.Schema.Types.ObjectId, ref: "newUser" },
+  attendingVetId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 
   activeTreatments: [{
     treatment: String,

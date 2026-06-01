@@ -11,7 +11,7 @@ const farmUserSchema = new mongoose.Schema(
 
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "newUser",
+      ref: "User",
       required: true,
       index: true,
     },
@@ -24,7 +24,7 @@ const farmUserSchema = new mongoose.Schema(
 
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "newUser",
+      ref: "User",
       required: true,
     },
 

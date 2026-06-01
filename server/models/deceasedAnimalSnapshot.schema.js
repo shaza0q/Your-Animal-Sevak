@@ -11,7 +11,7 @@ const deceasedAnimalSnapshotSchema = new mongoose.Schema({
 
   farmName: { type: String, required: true },
   ownerName: String,
-  ownerId: { type: mongoose.Schema.Types.ObjectId, ref: "newUser" },
+  ownerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 
   lastKnownWeight: Number,
   lastKnownLocation: String,

@@ -1,7 +1,7 @@
 /**
  * Represents a User document in MongoDB.
  *
- * @typedef {Object} newUser
+ * @typedef {Object} User
  * @property {import('mongoose').Types.ObjectId} _id
  * @property {string} full_name
  * @property {string} email

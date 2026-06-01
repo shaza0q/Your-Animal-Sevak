@@ -21,7 +21,7 @@ const salesSchema = new mongoose.Schema({
 
   handledBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'newUser'
+    ref: 'User'
   },
 
   farmId: {

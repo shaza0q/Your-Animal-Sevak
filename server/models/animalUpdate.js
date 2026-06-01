@@ -20,7 +20,7 @@ const animalUpdateSchema = new mongoose.Schema({
 
     staffId: { 
         type: mongoose.Schema.Types.ObjectId, 
-        ref: 'newUser',
+        ref: 'User',
         required: true,
     },
 
