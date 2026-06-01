@@ -732,6 +732,7 @@ import { fetchUser } from "@/utils/fetchUser";
 import { User as UserType } from "@/interface";
 import { UserRole, WorkflowStatus } from "@/types/deathCase";
 import { fetchAnimalAbstractData } from "@/utils/fetchAnimalAbstractData";
+import { DeathCaseAPI } from "@/api/deathCases";
 
 // Define workflow steps based on role
 type Step = "report" | "request-vet" | "vet-confirmation" | "disposal" | "review";
@@ -918,6 +919,32 @@ export default function NewDeathCase() {
 
   const availableSteps = getAvailableSteps();
 
+  // Helper function to map place of death to correct type
+  const mapPlaceOfDeath = (place: string): "barn" | "field" | "clinic" | "hospital" | "transport" | "unknown" => {
+    const normalizedPlace = place.toLowerCase().trim();
+    switch (normalizedPlace) {
+      case "barn":
+      case "main barn":
+      case "shed":
+        return "barn";
+      case "field":
+      case "pasture":
+      case "paddock":
+        return "field";
+      case "clinic":
+      case "vet clinic":
+      case "hospital":
+      case "vet hospital":
+        return "clinic";
+      case "transport":
+      case "transit":
+      case "moving":
+        return "transport";
+      default:
+        return "unknown";
+    }
+  };
+
   // Save draft function
   const saveDraft = async () => {
     if (!selectedAnimalData || !role) return;
@@ -929,20 +956,21 @@ export default function NewDeathCase() {
         caseNumber,
         workflowStatus: "draft" as WorkflowStatus,
         snapshot: {
+          id: selectedAnimal,
           name: selectedAnimalData.name,
           tagNumber: selectedAnimalData.tagNumber,
           species: selectedAnimalData.animalType,
           breed: selectedAnimalData.breed,
-          gender: selectedAnimalData.gender || "unknown",
+          gender: selectedAnimalData.gender || "male" as const,
           farmId: selectedAnimalData.farmId,
           farmName: selectedAnimalData.farmName,
         },
         eventInfo: {
           dateOfDeath: dateOfDeath.toISOString(),
           timeOfDeath: timeOfDeath || undefined,
-          placeOfDeath: placeOfDeath || "unknown",
+          placeOfDeath: mapPlaceOfDeath(placeOfDeath),
           reportedCause: reportedCause || "unknown",
-          discoveredBy: user?.name || "Unknown",
+          discoveredBy: user?.fullName || "Unknown",
           discoveredById: user?.id || "unknown",
           circumstances: circumstances || undefined,
           witnesses: witnesses.length > 0 ? witnesses : undefined,
@@ -954,8 +982,8 @@ export default function NewDeathCase() {
 
       let response;
       if (caseId) {
-        // Update existing draft
-        response = await DeathCaseAPI.update(caseId, draftData);
+        // Update existing draft - use updateEventInfo for event info
+        response = await DeathCaseAPI.updateEventInfo(caseId, draftData);
       } else {
         // Create new draft
         response = await DeathCaseAPI.createForAnimal(selectedAnimal, draftData);
@@ -989,20 +1017,21 @@ export default function NewDeathCase() {
         caseNumber,
         workflowStatus: "reported" as WorkflowStatus,
         snapshot: {
+          id: selectedAnimal,
           name: selectedAnimalData.name,
           tagNumber: selectedAnimalData.tagNumber,
           species: selectedAnimalData.animalType,
           breed: selectedAnimalData.breed,
-          gender: selectedAnimalData.gender || "unknown",
+          gender: selectedAnimalData.gender || "male" as const,
           farmId: selectedAnimalData.farmId,
           farmName: selectedAnimalData.farmName,
         },
         eventInfo: {
           dateOfDeath: dateOfDeath.toISOString(),
           timeOfDeath: timeOfDeath || undefined,
-          placeOfDeath: placeOfDeath || "unknown",
+          placeOfDeath: mapPlaceOfDeath(placeOfDeath),
           reportedCause: reportedCause || "unknown",
-          discoveredBy: user.name,
+          discoveredBy: user.fullName,
           discoveredById: user.id,
           circumstances: circumstances || undefined,
           witnesses: witnesses.length > 0 ? witnesses : undefined,
@@ -1011,8 +1040,8 @@ export default function NewDeathCase() {
 
       let response;
       if (caseId) {
-        // Update existing case to reported status
-        response = await DeathCaseAPI.update(caseId, {
+        // Update existing case to reported status - use updateEventInfo
+        response = await DeathCaseAPI.updateEventInfo(caseId, {
           ...reportData,
           workflowStatus: "reported",
         });
@@ -1086,7 +1115,7 @@ export default function NewDeathCase() {
     setIsSubmitting(true);
     try {
       const vetData = {
-        confirmedBy: user.name,
+        confirmedBy: user.fullName,
         confirmedById: user.id,
         confirmedAt: new Date().toISOString(),
         confirmedCause,
@@ -1145,7 +1174,7 @@ export default function NewDeathCase() {
         method: disposalMethod,
         date: disposalDate.toISOString(),
         location: disposalLocation || undefined,
-        handledBy: user.name,
+        handledBy: user.fullName,
         handledById: user.id,
         witnessedBy: disposalWitness || undefined,
       };
@@ -1244,7 +1273,6 @@ export default function NewDeathCase() {
       <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
         <Badge variant="secondary" className={cn(
           role === "caretaker" && "bg-blue-500/15 text-blue-600",
-          role === "staff" && "bg-green-500/15 text-green-600",
           role === "owner" && "bg-purple-500/15 text-purple-600",
           role === "veterinarian" && "bg-amber-500/15 text-amber-600",
           role === "admin" && "bg-red-500/15 text-red-600",
