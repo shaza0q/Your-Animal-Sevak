@@ -1,0 +1,557 @@
+// Prisma schema for Your Animal Sevak
+// Database: PostgreSQL | ORM: Prisma
+// Migrated from Mongoose/MongoDB — clean-slate, no data to carry over.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+// Consolidated from user.js + newUsers.js (added manager which the workflow needs)
+enum UserRole {
+  admin
+  owner
+  manager
+  staff
+  caretaker
+  veterinarian
+}
+
+enum FarmStatus {
+  active
+  inactive
+  archived
+}
+
+enum AnimalType {
+  Cow
+  Buffalo
+  Goat
+  Sheep
+  Chicken
+  Duck
+  Rabbit
+  Dog
+  Cat
+  Camel
+  Donkey
+  Horse
+  Pigeon
+  Turkey
+  Other
+}
+
+enum Gender {
+  Male
+  Female
+}
+
+enum AnimalStatus {
+  Active
+  Sold
+  Deceased
+}
+
+enum UpdateType {
+  Health
+  Weight
+  Vaccination
+  Breeding
+  Sale
+}
+
+enum HealthStatus {
+  Healthy
+  Injured
+  Diseased
+  Pregnant
+  Sold
+  Dead
+}
+
+enum RiskLevel {
+  Low
+  Moderate
+  High
+}
+
+enum AssignmentRole {
+  caretaker
+  veterinarian
+}
+
+enum AssignmentSource {
+  system
+  manual
+  import
+}
+
+enum CauseOfDeath {
+  natural
+  medical
+  accident
+  infectious
+  non_infectious
+  euthanasia
+  unknown
+  predation
+  dystocia
+  poisoning
+  heat_stress
+  cold_stress
+}
+
+enum PlaceOfDeath {
+  barn
+  field
+  clinic
+  hospital
+  transport
+  quarantine
+  holding_pen
+  unknown
+}
+
+enum DisposalMethod {
+  burial
+  cremation
+  rendering
+  composting
+  incineration
+  landfill
+  other
+}
+
+enum InsuranceStatus {
+  pending
+  approved
+  rejected
+  not_claimed
+}
+
+// Death-case workflow states (mirrors common/enums/workflowDeceasedAnimal.js)
+enum WorkflowStatus {
+  draft
+  reported
+  vet_requested
+  vet_confirmed
+  disposal_pending
+  disposal_recorded
+  review_pending
+  correction_needed
+  approved
+  archived
+}
+
+enum ApprovalStatus {
+  pending
+  approved
+  requires_correction
+}
+
+// ─────────────────────────────────────────────
+// CORE MODELS
+// ─────────────────────────────────────────────
+
+// Single consolidated user model (replaces both user.js and newUsers.js)
+model User {
+  id        String   @id @default(cuid())
+  fullName  String
+  email     String   @unique
+  mobile    String   @unique
+  password  String
+  role      UserRole @default(caretaker)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ownedFarms             Farm[]             @relation("FarmOwner")
+  createdFarms           Farm[]             @relation("FarmCreator")
+  farmMemberships        FarmUser[]         @relation("FarmMember")
+  createdFarmMemberships FarmUser[]         @relation("FarmMemberCreator")
+  animalUpdates          AnimalUpdate[]
+  assignmentsGiven       AnimalAssignment[] @relation("AssignedBy")
+  assignmentsRemoved     AnimalAssignment[] @relation("UnassignedBy")
+  workerAssignments      AnimalAssignment[] @relation("Worker")
+  sales                  Sale[]
+  deathEventsReported    DeathEvent[]       @relation("ReportedBy")
+  deathEventsConfirmed   DeathEvent[]       @relation("ConfirmedBy")
+  attendedDeathCases     MedicalContext[]
+  auditRecordsCreated    AuditMetadata[]
+}
+
+model Farm {
+  id          String     @id @default(cuid())
+  name        String
+  location    String?
+  capacity    Int?
+  status      FarmStatus @default(active)
+  animalTypes String[]   @default([])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  owner       User   @relation("FarmOwner", fields: [ownerId], references: [id])
+  ownerId     String
+  createdBy   User   @relation("FarmCreator", fields: [createdById], references: [id])
+  createdById String
+
+  animals    Animal[]
+  farmUsers  FarmUser[]
+  deathCases DeceasedAnimalRecord[]
+  assignments AnimalAssignment[]
+  sales      Sale[]
+}
+
+model FarmUser {
+  id          String   @id @default(cuid())
+  role        UserRole
+  isActive    Boolean  @default(true)
+  assignedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  farm        Farm   @relation(fields: [farmId], references: [id])
+  farmId      String
+  user        User   @relation("FarmMember", fields: [userId], references: [id])
+  userId      String
+  createdBy   User   @relation("FarmMemberCreator", fields: [createdById], references: [id])
+  createdById String
+
+  @@unique([farmId, userId])
+  @@index([farmId])
+  @@index([userId])
+}
+
+model Animal {
+  id              String       @id @default(cuid())
+  tagNumber       String
+  name            String
+  animalType      AnimalType
+  breed           String
+  gender          Gender
+  generation      Int          @default(1)
+  weight          Float?
+  dateOfBirth     DateTime?
+  acquisitionDate DateTime?
+  status          AnimalStatus @default(Active)
+  isDeleted       Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  farm     Farm   @relation(fields: [farmId], references: [id])
+  farmId   String
+
+  // Self-referential lineage — named relations required by Prisma
+  mother   Animal?  @relation("MotherLineage", fields: [motherId], references: [id])
+  motherId String?
+  father   Animal?  @relation("FatherLineage", fields: [fatherId], references: [id])
+  fatherId String?
+
+  offspringViaMother Animal[] @relation("MotherLineage")
+  offspringViaFather Animal[] @relation("FatherLineage")
+
+  updates          AnimalUpdate[]
+  assignments      AnimalAssignment[]
+  breedingUpdates  AnimalUpdate[]     @relation("BreedingMaleAnimal")
+  sales            Sale[]
+  deathRecord      DeceasedAnimalRecord?
+
+  @@unique([farmId, tagNumber])
+  @@index([farmId])
+  @@index([status])
+  @@index([dateOfBirth])
+}
+
+model AnimalUpdate {
+  id                   String       @id @default(cuid())
+  date                 DateTime     @default(now())
+  weight               Float?
+  notes                String?
+  mediaUrl             String?
+  updateType           UpdateType
+  status               HealthStatus
+  riskLevel            RiskLevel    @default(Low)
+  vaccineName          String?
+  diseaseName          String?
+  expectedDeliveryDate DateTime?
+  nextVaccineDate      DateTime?
+  // Sale fields (buyer info stored here to keep the timeline self-contained)
+  price                Float?
+  buyerName            String?
+  buyerEmail           String?
+  buyerContact         String?
+  buyerAddress         String?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  animal       Animal  @relation(fields: [animalId], references: [id])
+  animalId     String
+  staff        User    @relation(fields: [staffId], references: [id])
+  staffId      String
+  // For Breeding updates: the male animal used
+  maleAnimal   Animal? @relation("BreedingMaleAnimal", fields: [maleAnimalId], references: [id])
+  maleAnimalId String?
+
+  @@index([animalId, date(sort: Desc)])
+  @@index([animalId, status])
+  @@index([status, date(sort: Desc)])
+  @@index([vaccineName])
+  @@index([diseaseName])
+  @@index([staffId, date(sort: Desc)])
+}
+
+// Tracks which worker (caretaker/vet) is currently responsible for an animal.
+// Partial unique index (animalId, workerId) WHERE unassignedAt IS NULL must be
+// added in migration SQL — Prisma doesn't support partial indexes in schema.
+model AnimalAssignment {
+  id               String           @id @default(cuid())
+  role             AssignmentRole?
+  assignedAt       DateTime         @default(now())
+  unassignedAt     DateTime?        // null = currently active
+  assignmentSource AssignmentSource @default(manual)
+  notes            String?          @default("")
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  animal         Animal  @relation(fields: [animalId], references: [id])
+  animalId       String
+  farm           Farm    @relation(fields: [farmId], references: [id])
+  farmId         String
+  worker         User?   @relation("Worker", fields: [workerId], references: [id])
+  workerId       String?
+  assignedBy     User?   @relation("AssignedBy", fields: [assignedById], references: [id])
+  assignedById   String?
+  unassignedBy   User?   @relation("UnassignedBy", fields: [unassignedById], references: [id])
+  unassignedById String?
+
+  @@index([animalId, unassignedAt])
+  @@index([workerId, unassignedAt])
+  @@index([farmId, unassignedAt])
+}
+
+model Sale {
+  id               String    @id @default(cuid())
+  price            Float?
+  dateSold         DateTime?
+  buyerName        String
+  buyerContactInfo String
+  buyerAddress     String?
+  buyerEmail       String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  animal      Animal @relation(fields: [animalId], references: [id])
+  animalId    String
+  farm        Farm   @relation(fields: [farmId], references: [id])
+  farmId      String
+  handledBy   User?  @relation(fields: [handledById], references: [id])
+  handledById String?
+
+  @@index([dateSold(sort: Desc), animalId])
+}
+
+// ─────────────────────────────────────────────
+// REFERENCE / MASTER DATA
+// ─────────────────────────────────────────────
+
+model BreedMaster {
+  id         String @id @default(cuid())
+  breedName  String
+  animalType String
+
+  @@unique([animalType, breedName])
+  @@index([animalType])
+}
+
+model DiseaseMaster {
+  id          String @id @default(cuid())
+  diseaseName String
+  animalType  String
+
+  @@unique([animalType, diseaseName])
+  @@index([animalType])
+}
+
+model VaccineMaster {
+  id          String @id @default(cuid())
+  vaccineName String
+  animalType  String
+
+  @@unique([animalType, vaccineName])
+  @@index([animalType])
+}
+
+// ─────────────────────────────────────────────
+// DEATH CASE DOMAIN
+// Each DeceasedAnimalRecord has four 1-1 child tables:
+//   DeathEvent, PostDeathHandling, LegalFinancial, MedicalContext, AuditMetadata
+// This mirrors the Mongoose embedded sub-documents but gives us FK integrity,
+// queryable columns, and ACID transactions across all of them.
+// ─────────────────────────────────────────────
+
+model DeceasedAnimalRecord {
+  id            String         @id @default(cuid())
+  recordVersion Int            @default(1)
+  workflowStatus WorkflowStatus @default(reported)
+
+  // Physical state at time of death
+  locationAtDeath    String?
+  ageAtDeath         String?
+  ageInMonths        Int?
+  weightAtDeath      Float?
+  bodyConditionScore Float?
+  daysSinceDeath     Int?
+  seasonOfDeath      String?
+
+  tags  String[] @default([])
+  notes String?
+
+  // Frozen snapshot of animal data at time of death (for audit immutability).
+  // These are never updated after creation.
+  snapshotTagNumber          String
+  snapshotName               String
+  snapshotType               String
+  snapshotBreed              String?
+  snapshotGender             String?
+  snapshotDateOfBirth        DateTime?
+  snapshotPhotoUrl           String?
+  snapshotFarmName           String
+  snapshotOwnerName          String?
+  snapshotOwnerId            String?
+  snapshotLastKnownWeight    Float?
+  snapshotLastKnownLocation  String?
+  snapshotReproductiveStatus String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  animal   Animal @relation(fields: [animalId], references: [id])
+  animalId String @unique // one death record per animal
+
+  farm   Farm   @relation(fields: [farmId], references: [id])
+  farmId String
+
+  deathEvent        DeathEvent?
+  postDeathHandling PostDeathHandling?
+  legalFinancial    LegalFinancial?
+  medicalContext    MedicalContext?
+  auditMetadata     AuditMetadata?
+
+  @@index([farmId, createdAt(sort: Desc)])
+  @@index([snapshotType])
+  @@index([workflowStatus])
+  @@index([farmId, workflowStatus])
+  @@index([farmId, snapshotType, createdAt(sort: Desc)])
+}
+
+model DeathEvent {
+  id           String       @id @default(cuid())
+  dateOfDeath  DateTime
+  timeOfDeath  String?
+  causeOfDeath CauseOfDeath
+  causeDetails String?
+  placeOfDeath PlaceOfDeath
+  confirmedAt  DateTime?
+
+  record        DeceasedAnimalRecord @relation(fields: [recordId], references: [id])
+  recordId      String               @unique
+  reportedBy    User                 @relation("ReportedBy", fields: [reportedById], references: [id])
+  reportedById  String
+  confirmedBy   User?                @relation("ConfirmedBy", fields: [confirmedById], references: [id])
+  confirmedById String?
+
+  @@index([causeOfDeath])
+  @@index([dateOfDeath(sort: Desc)])
+}
+
+model PostDeathHandling {
+  id                    String          @id @default(cuid())
+  necropsyPerformed     Boolean         @default(false)
+  necropsyReportLink    String?
+  necropsyFindings      String?
+  labSamplesTaken       String[]        @default([])
+  disposalMethod        DisposalMethod?
+  disposalDate          DateTime?
+  disposalLocation      String?
+  disposalCompany       String?
+  disposalCost          Float?
+  disposalCertificateId String?
+
+  record   DeceasedAnimalRecord @relation(fields: [recordId], references: [id])
+  recordId String               @unique
+}
+
+model LegalFinancial {
+  id                        String          @id @default(cuid())
+  insuranceClaimId          String?
+  insuranceStatus           InsuranceStatus @default(pending)
+  estimatedLossValue        Float?
+  marketValueAtDeath        Float?
+  regulatoryReportRequired  Boolean?
+  regulatoryReportSubmitted Boolean?
+  regulatoryReportId        String?
+
+  record   DeceasedAnimalRecord @relation(fields: [recordId], references: [id])
+  recordId String               @unique
+}
+
+model MedicalContext {
+  id                  String    @id @default(cuid())
+  lastVetVisitDate    DateTime?
+  lastVetVisitReason  String?
+  vaccinationStatus   String?
+  lastVaccinationDate DateTime?
+  lastProductionValue Float?
+  lastProductionDate  DateTime?
+  productionUnit      String?
+
+  // Array-of-objects stored as JSON — not individually queried
+  // Shape: { treatment: string, startDate: Date, administeringVet: string }[]
+  activeTreatments  Json @default("[]")
+  // Shape: { name: string, dosage: string, startDate: Date }[]
+  activeMedications Json @default("[]")
+  // Shape: { name: string, diagnosedDate: Date, severity: 'mild'|'moderate'|'severe' }[]
+  knownConditions   Json @default("[]")
+
+  record         DeceasedAnimalRecord @relation(fields: [recordId], references: [id])
+  recordId       String               @unique
+  attendingVet   User?                @relation(fields: [attendingVetId], references: [id])
+  attendingVetId String?
+}
+
+// Audit trail and approval metadata for a death case.
+// Corrections, activity log, attachments, and compliance checklist are stored
+// as JSON arrays because they are always read/written as a whole and never
+// filtered or joined against individually.
+model AuditMetadata {
+  id              String         @id @default(cuid())
+  recordCreatedAt DateTime       @default(now())
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  approvalStatus  ApprovalStatus @default(pending)
+  approvalNotes   String?
+
+  // Shape: { timestamp, userId, userName, reason, changes: [{field,from,to,note}], correctionApprovedBy, correctionApprovedAt }[]
+  corrections Json @default("[]")
+  // Shape: { timestamp, userId, userName, action, section, changes: [{field,from,to,note}], comments }[]
+  activityLog Json @default("[]")
+  // Shape: { name, type, url, uploadedAt, uploadedBy }[]
+  attachments Json @default("[]")
+  // Shape: { label, required, completed, completedAt, completedBy, notes }[]
+  complianceChecklist Json @default("[]")
+
+  record            DeceasedAnimalRecord @relation(fields: [recordId], references: [id])
+  recordId          String               @unique
+  recordCreatedBy   User?                @relation(fields: [recordCreatedById], references: [id])
+  recordCreatedById String?
+
+  @@index([approvalStatus])
+}

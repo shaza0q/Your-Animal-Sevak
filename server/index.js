@@ -1,5 +1,4 @@
 const express = require('express');
-const {connectDB} = require('./connection')
 const userRouter = require('./routes/user')
 const authRouter = require('./routes/auth')
 const assetRouter = require('./routes/asset')
@@ -16,13 +15,8 @@ const dotenv = require('dotenv')
 const cookieParser = require('cookie-parser')
 dotenv.config()
 
+if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is not set in environment');
 const PORT = process.env.PORT || 8000;
-const MONGO_URL = process.env.MONGO_URL;
-if (!MONGO_URL) throw new Error('MONGO_URL is not set in environment');
-
-connectDB(MONGO_URL)
-.then(() => console.log("DB connected"))
-.catch((err) => { console.log(err); process.exit(1); })
 
 
 app.use(cors(corsOptions));
