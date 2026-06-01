@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Animal Sevak (local)",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "animal_sevak",
+      "Username": "animal_sevak",
+      "SSLMode": "prefer"
+    }
+  }
+}
