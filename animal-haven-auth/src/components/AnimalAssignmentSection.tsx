@@ -48,7 +48,7 @@ type AssignmentRole = "caretaker" | "veterinarian";
 
 interface AssignmentWithDetails extends Assignment {
   worker: {
-    _id: string;
+    id: string;
     name: string;
     email: string;
     role: AssignmentRole;
@@ -182,8 +182,8 @@ const AnimalAssignmentSection = ({
   const isAlreadyAssigned = useMemo(() => {
     if (!selectedUser) return false;
     return assignments.some(
-      assignment => 
-        assignment.worker._id === selectedUser._id && 
+      assignment =>
+        assignment.worker.id === selectedUser.id &&
         assignment.role === selectedRole
     );
   }, [selectedUser, selectedRole, assignments]);
@@ -281,7 +281,7 @@ const AnimalAssignmentSection = ({
 
     setAssigning(true);
     try {
-      await assignAnimalUser(animal.id, selectedUser._id, selectedRole);
+      await assignAnimalUser(animal.id, selectedUser.id, selectedRole);
 
       toast({
         title: "Assignment successful",
@@ -313,7 +313,7 @@ const AnimalAssignmentSection = ({
 
     setUnassigning(true);
     try {
-      await unassignAnimalUser(animal.id, assignmentToUnassign._id);
+      await unassignAnimalUser(animal.id, assignmentToUnassign.id);
       
       toast({ 
         title: "Assignment removed",
@@ -321,7 +321,7 @@ const AnimalAssignmentSection = ({
       });
 
       // Update local state immediately for better UX
-      setAssignments(prev => prev.filter(a => a._id !== assignmentToUnassign._id));
+      setAssignments(prev => prev.filter(a => a.id !== assignmentToUnassign.id));
       
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to remove assignment";
@@ -400,7 +400,7 @@ const AnimalAssignmentSection = ({
             <div className="space-y-2">
               {caretakerAssignments.map((assignment) => (
                 <AssignmentItem
-                  key={assignment._id}
+                  key={assignment.id}
                   assignment={assignment}
                   onUnassignClick={handleUnassignClick}
                   canUnassign={!!userId}
@@ -417,7 +417,7 @@ const AnimalAssignmentSection = ({
             <div className="space-y-2">
               {veterinarianAssignments.map((assignment) => (
                 <AssignmentItem
-                  key={assignment._id}
+                  key={assignment.id}
                   assignment={assignment}
                   onUnassignClick={handleUnassignClick}
                   canUnassign={!!userId}
@@ -464,13 +464,13 @@ const AnimalAssignmentSection = ({
       <div className="space-y-2">
         {searchResults.map((user) => (
           <SearchResultItem
-            key={user._id}
+            key={user.id}
             user={user}
             onClick={() => {
               setSelectedUser(user);
               setAssignDialogOpen(true);
             }}
-            isSelected={selectedUser?._id === user._id}
+            isSelected={selectedUser?.id === user.id}
           />
         ))}
       </div>

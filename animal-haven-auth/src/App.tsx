@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
@@ -15,9 +16,8 @@ import AddFarm from "./pages/AddFarm";
 import FarmInsights from "./pages/FarmInsights";
 import AnimalUpdate from "./pages/AnimalUpdate";
 import Directory from "./pages/Directory";
-import FarmAnimals from "./pages/FarmAnimals";
 import AnimalsOverview from "./pages/AnimalsOverview";
-import AnimalDetail from "./pages/AnimalDetail1";
+import AnimalDetail from "./pages/AnimalDetail";
 import AnimalsByCategory from "./pages/AnimalsByCategory";
 import AnimalHistoryPage from "./components/history/AnimalHistoryPage";
 import DeceasedAnimals from "./pages/DeceasedAnimals";
@@ -27,6 +27,7 @@ import NewDeathCase from "./pages/NewDeathCase";
 const queryClient = new QueryClient();
 
 const App = () => (
+  <ErrorBoundary>
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <TooltipProvider>
@@ -44,7 +45,6 @@ const App = () => (
             <Route path="/farmInsights/:id" element={<FarmInsights/>} />
             <Route path="/animalUpdate" element={<AnimalUpdate/>} />
             <Route path="/directory" element={<Directory />} />
-            <Route path="/farmAnimals" element={<FarmAnimals />} />
             <Route path="/farms/:farmId/animals" element={<AnimalsOverview />} />
             <Route path="/farms/:farmId/animals/type/:animalType" element={<AnimalsByCategory />} />
             <Route path="/farms/:farmId/animals/:animalId" element={<AnimalDetail />} />
@@ -61,6 +61,7 @@ const App = () => (
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

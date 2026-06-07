@@ -7,7 +7,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { User, Stethoscope, X, UserPlus, Lock } from "lucide-react";
+import { User, Stethoscope, X, UserPlus, Lock, UserX } from "lucide-react";
+import { EmptyState } from "@/components/EmptyState";
 
 interface PersonStatusProps {
   role: string;
@@ -240,12 +241,24 @@ const PeopleResponsiblePanel = ({
   onUnassignCaretaker,
   onUnassignVeterinarian,
 }: PeopleResponsiblePanelProps) => {
+  const bothUnassigned = !caretakerId && !veterinarianId;
+
   return (
     <Card className="lg:col-span-2 border-border/40 bg-muted/20 shadow-sm">
       <CardContent className="pt-6">
         <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-5">
           People Responsible
         </h2>
+
+        {bothUnassigned && (
+          <EmptyState
+            icon={UserX}
+            title="Unassigned"
+            description="No caretaker or vet is assigned to this animal."
+            className="py-4 mb-2"
+          />
+        )}
+
         <div className="space-y-3">
           <PersonStatus
             role="Caretaker"
@@ -259,7 +272,7 @@ const PeopleResponsiblePanel = ({
             canUnassign={canUnassign}
             isLoading={isLoading}
           />
-          
+
           <PersonStatus
             role="Veterinarian"
             icon={<Stethoscope className="h-4 w-4" />}

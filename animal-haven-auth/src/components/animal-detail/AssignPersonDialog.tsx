@@ -13,9 +13,9 @@ import {
 import { Search, UserX, Loader2, X } from "lucide-react";
 import { FarmUser } from "@/types/animal";
 
-// Interface for API response which uses _id
+// Interface for API response which uses id
 interface SearchFarmUser {
-  _id: string;
+  id: string;
   name: string;
   email: string;
   role: "owner" | "staff" | "caretaker" | "veterinarian";
@@ -23,7 +23,7 @@ interface SearchFarmUser {
 import { useToast } from "@/hooks/use-toast";
 import { searchFarmUsers } from "@/api/searchFarmUsers";
 import { assignAnimalUser } from "@/api/assignAnimalUser";
-import { useHistoryCache } from "@/components/history/AnimalHistoryPage";
+import { useInvalidateAnimalHistory } from "@/hooks/useAnimalHistory";
 import { unassignAnimalUser } from "@/api/unassignAnimalUser";
 
 interface AssignPersonDialogProps {
@@ -50,7 +50,7 @@ const AssignPersonDialog = ({
   onAssignmentChange,
 }: AssignPersonDialogProps) => {
   const { toast } = useToast();
-  const { invalidateCache } = useHistoryCache();
+  const invalidateHistory = useInvalidateAnimalHistory();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchFarmUser[]>([]);
@@ -71,7 +71,7 @@ const AssignPersonDialog = ({
       const results = await searchFarmUsers(farmId, searchQuery.trim(), [role]) as SearchFarmUser[];
       console.log('Search results:', results);
       // Filter out already assigned user
-      const filteredResults = results.filter(u => u._id !== currentAssigneeId);
+      const filteredResults = results.filter(u => u.id !== currentAssigneeId);
       console.log('Filtered results:', filteredResults);
       setSearchResults(filteredResults);
     } catch (error) {
@@ -98,7 +98,7 @@ const AssignPersonDialog = ({
     
     setAssigning(true);
     try {
-      await assignAnimalUser(animalId, selectedUser._id, role);
+      await assignAnimalUser(animalId, selectedUser.id, role);
       
       toast({
         title: "Assignment successful",
@@ -107,8 +107,7 @@ const AssignPersonDialog = ({
       
       handleClose();
       onAssignmentChange?.();
-
-      invalidateCache();
+      invalidateHistory(animalId);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Assignment failed";
       toast({
@@ -189,10 +188,10 @@ const AssignPersonDialog = ({
             ) : searchResults.length > 0 ? (
               searchResults.map((u) => (
                 <div
-                  key={u._id}
+                  key={u.id}
                   className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                    selectedUser?._id === u._id 
-                      ? "border-primary bg-primary/5 ring-1 ring-primary/20" 
+                    selectedUser?.id === u.id
+                      ? "border-primary bg-primary/5 ring-1 ring-primary/20"
                       : "border-border/50 hover:bg-muted/50 hover:border-border"
                   }`}
                   onClick={() => setSelectedUser(u)}

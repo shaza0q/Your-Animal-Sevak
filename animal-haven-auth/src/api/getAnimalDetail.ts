@@ -1,30 +1,10 @@
-import axios from "axios";
-import { API_BASE_URL } from "../../cache";
+import { api } from "@/lib/api";
+import { AnimalDetail } from "@/interfaces/animal-detail.interface";
 
-export const getAnimalDetail = async (farmId: string, animalId: string): Promise<any> => {
-    try {
-         const res = await axios.get(
-            `${API_BASE_URL}/farms/${farmId}/animals/${animalId}`,
-            {
-                withCredentials: true,
-            }
-        );
-
-        if (!res.data) {
-            throw new Error("Failed to fetch animal detail");
-        }
-
-        console.log("---------api getAnimalDetail Animal detail fetch success", res.data);
-        return res.data;
-    } catch (error: any) {
-        const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "Failed to fetch animal detail";
-
-        const customError: any = new Error(errorMessage);
-        customError.status = error.response?.status;
-
-        throw customError;
-    }
+export const getAnimalDetail = async (
+  farmId: string,
+  animalId: string,
+): Promise<AnimalDetail> => {
+  const res = await api.get<AnimalDetail>(`/farms/${farmId}/animals/${animalId}`);
+  return res.data;
 };

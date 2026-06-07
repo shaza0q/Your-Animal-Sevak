@@ -29,7 +29,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { updateAnimalData, getVaccineData, getDiseaseData } from "@/api"
-import { useHistoryCache } from "@/components/history/AnimalHistoryPage";
+import { useInvalidateAnimalHistory } from "@/hooks/useAnimalHistory";
 
 // Types
 type UpdateType = "Health" | "Weight" | "Vaccination" | "Breeding" | "Sale";
@@ -279,7 +279,7 @@ const compressImage = (file: File, maxWidth = 1200, quality = 0.8): Promise<File
 
 const AnimalUpdate = () => {
   const { toast } = useToast();
-  const { invalidateCache } = useHistoryCache();
+  const invalidateHistory = useInvalidateAnimalHistory();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -633,7 +633,7 @@ const AnimalUpdate = () => {
         setIsSubmitting(false);
       }, 500);
 
-      invalidateCache();
+      invalidateHistory(formData.animalId);
     } catch (error) {
       toast({
         title: "Submission Failed",

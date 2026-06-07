@@ -1,267 +1,363 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useNavigate, useParams } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { FarmUser } from "@/types/animal";
+import { User } from "@/interface/user.interface";
 import {
-  ArrowLeft,
-  Activity,
-  Syringe,
-  Heart,
-  Tag,
-  MapPin,
-  User,
-  UserX,
-  Stethoscope
-} from "lucide-react";
-import { getAnimalUpdates } from "@/data/mockAnimals";
-import { Animal, AnimalUpdate } from "@/types/animal";
-import { type AnimalDetail, getCaretakerId, getVeterinarianId, getCaretakerName, getVeterinarianName, getAnimalType } from "@/interfaces/animal-detail.interface";
+  AnimalHeader,
+  AnimalProfileCard,
+  PeopleResponsiblePanel,
+  HealthActions,
+  AssignPersonDialog,
+} from "@/components/animal-detail";
+import { LineageSection } from "@/components/LineageSection";
 import { fetchUser } from "@/utils/fetchUser";
-import { fetchAnimalDetail } from "@/utils/fetchAnimalDetail";
-import AnimalAssignmentSection from "@/components/AnimalAssignmentSection";
+import { UserRole } from "@/enums/user-role.enum";
+import { unassignAnimalUser } from "@/api/unassignAnimalUser";
+import { ConfirmActionDialog } from "@/components/common/confirm-action-dialog-box";
+import { RecentHistory } from "@/components/history/RecentHistory";
+import { FileText, Skull, AlertCircle, ClipboardList, BadgeDollarSign } from "lucide-react";
+import { useAnimalDetail, useInvalidateAnimalDetail } from "@/hooks/useAnimalDetail";
+import { useAnimalHistory, useInvalidateAnimalHistory } from "@/hooks/useAnimalHistory";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { AnimalUpdateForm } from "@/components/AnimalUpdateForm";
+import { SellAnimalForm } from "@/components/SellAnimalForm";
 
+// ─── Loading skeleton shown while the detail query is in flight ───────────────
+const DetailSkeleton = () => (
+  <div className="min-h-screen bg-background">
+    <div className="h-20 border-b bg-card/50" />
+    <main className="container mx-auto px-4 py-8 space-y-8">
+      <div className="grid gap-6 lg:grid-cols-5">
+        <div className="lg:col-span-3 space-y-4">
+          <Skeleton className="h-6 w-32" />
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="h-14" />
+            ))}
+          </div>
+        </div>
+        <div className="lg:col-span-2">
+          <Skeleton className="h-40 rounded-xl" />
+        </div>
+      </div>
+      <Skeleton className="h-32 rounded-xl" />
+      <Skeleton className="h-48 rounded-xl" />
+    </main>
+  </div>
+);
+
+// ─── Page component ───────────────────────────────────────────────────────────
 const AnimalDetail = () => {
   const navigate = useNavigate();
   const { farmId, animalId } = useParams<{ farmId: string; animalId: string }>();
-  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
 
-  const [user, setUser] = useState<any>(null);
-  const [animal, setAnimal] = useState<AnimalDetail | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
+  const [logUpdateOpen, setLogUpdateOpen] = useState(false);
+  const [recordSaleOpen, setRecordSaleOpen] = useState(false);
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [assignRole, setAssignRole] = useState<"caretaker" | "veterinarian">("caretaker");
+  const [isUnassigning, setIsUnassigning] = useState(false);
+  const [unassignRole, setUnassignRole] = useState<
+    UserRole.CARETAKER | UserRole.VETERINARIAN | null
+  >(null);
 
+  const invalidateDetail = useInvalidateAnimalDetail();
+  const invalidateHistory = useInvalidateAnimalHistory();
+
+  // Fetch logged-in user (needed for role check only)
   useEffect(() => {
-      const init = async () => {
-        try {
-          setLoading(true);
+    fetchUser()
+      .then((u) => {
+        setUser(u);
+        setIsOwner(u.role === UserRole.OWNER);
+      })
+      .catch(() => navigate("/signin", { replace: true }));
+  }, [navigate]);
 
-          const userData = await fetchUser();
-          setUser(userData)
+  // ── TanStack Query: animal detail ────────────────────────────────────────
+  const {
+    data: animal,
+    isLoading: detailLoading,
+    isError: detailError,
+  } = useAnimalDetail(farmId, animalId);
 
-          console.log('-----------------userData', userData);
+  // ── TanStack Query: recent history (5 events) ────────────────────────────
+  const {
+    data: historyData,
+    isLoading: historyLoading,
+  } = useAnimalHistory(animalId, { limit: 5 });
 
-          const animalData = await fetchAnimalDetail(farmId, animalId);
-          setAnimal(animalData)
+  const historyEvents = historyData?.data ?? [];
 
-        } catch (error) {
-          setUser(null);
-          navigate("/signin", { replace: true });
+  // ── Handlers ─────────────────────────────────────────────────────────────
+  const openAssignModal = (role: "caretaker" | "veterinarian") => {
+    setAssignRole(role);
+    setAssignModalOpen(true);
+  };
 
-        } finally {
-          setLoading(false);
-        }
-      };
+  const requestUnassign = (role: UserRole.CARETAKER | UserRole.VETERINARIAN) => {
+    setUnassignRole(role);
+  };
 
-    if (farmId && animalId) init();
-  }, [farmId, animalId, navigate]);
+  const handleConfirmUnassign = async () => {
+    if (!unassignRole || !animal || !animalId) return;
 
-  // Handle ?assign=caretaker query param
-  useEffect(() => {
-    const assignParam = searchParams.get("assign");
-    if (assignParam === "caretaker" || assignParam === "veterinarian") {
-      // This will be handled by AnimalAssignmentSection component
-      setSearchParams({});
+    const assignedUser =
+      unassignRole === UserRole.CARETAKER ? animal.caretaker : animal.veterinarian;
+
+    if (!assignedUser?.id) return;
+
+    setIsUnassigning(true);
+    try {
+      await unassignAnimalUser(animalId, assignedUser.id, unassignRole.toLowerCase());
+      toast({
+        title: "Person unassigned",
+        description: `${assignedUser.name} has been removed.`,
+      });
+      // Invalidate both detail and history so UI updates automatically
+      if (farmId && animalId) {
+        invalidateDetail(farmId, animalId);
+        invalidateHistory(animalId);
+      }
+      setUnassignRole(null);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to unassign",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUnassigning(false);
     }
-  }, [searchParams, setSearchParams]);
+  };
 
+  const handleAssignmentChange = () => {
+    if (farmId && animalId) {
+      invalidateDetail(farmId, animalId);
+      invalidateHistory(animalId);
+    }
+  };
+
+  const handleViewFullHistory = () => {
+    navigate(`/farms/${farmId}/animals/${animalId}/history`);
+  };
+
+  // ── Guard: auth ──────────────────────────────────────────────────────────
   if (!user) return null;
 
-  if (!animal) {
+  // ── Loading ──────────────────────────────────────────────────────────────
+  if (detailLoading) return <DetailSkeleton />;
+
+  // ── Error ────────────────────────────────────────────────────────────────
+  if (detailError || !animal) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="w-96">
-          <CardHeader>
-            <CardTitle>Not Found</CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6 text-center">
+            <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="font-semibold text-lg mb-2">Animal Not Found</h3>
             <p className="text-muted-foreground mb-4">
-              The requested animal could not be found.
+              The requested animal could not be found or you don't have access.
             </p>
-            <Button onClick={() => navigate("/directory")}>Back to Directory</Button>
+            <Button onClick={() => navigate(`/farms/${farmId}/animals`)}>
+              Back to Animals
+            </Button>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  const getStatusBadgeVariant = (status: AnimalDetail["status"]) => {
-    switch (status) {
-      case "healthy": return "default";
-      case "pregnant": return "secondary";
-      case "vaccined": return "outline";
-      case "injured":
-      case "diseased": return "destructive";
-      case "sold": return "secondary";
-      default: return "default";
-    }
-  };
-
-  const getUpdateIcon = (type: AnimalUpdate["type"]) => {
-    switch (type) {
-      case "health": return <Activity className="h-4 w-4" />;
-      case "weight": return <Tag className="h-4 w-4" />;
-      case "vaccination": return <Syringe className="h-4 w-4" />;
-      case "breeding": return <Heart className="h-4 w-4" />;
-      case "sale": return <Tag className="h-4 w-4" />;
-      default: return <Activity className="h-4 w-4" />;
-    }
-  };
-
-  const updates = animalId ? getAnimalUpdates(animalId) : [];
+  const isConfirmOpen = unassignRole !== null;
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-card shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(`/farms/${farmId}/animals/type/${animal.animalType}`)}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-foreground">{animal.name}</h1>
-              <p className="text-sm text-muted-foreground">
-                {animal.tagNumber} • {animal.animalType} • {animal.breed}
-              </p>
-            </div>
-            <Badge variant={getStatusBadgeVariant(animal.status)} className="text-sm">
-              {animal.status}
-            </Badge>
-          </div>
-        </div>
-      </header>
+      <AnimalHeader animal={animal} farmId={farmId!} />
 
-      <main className="container mx-auto px-4 py-8 space-y-6">
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Animal Profile */}
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Tag className="h-5 w-5" />
-                Animal Profile
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Tag Number</p>
-                  <p className="font-medium">{animal.tagNumber}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Type</p>
-                  <p className="font-medium">{animal.animalType}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Breed</p>
-                  <p className="font-medium">{animal.breed}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Gender</p>
-                  <p className="font-medium capitalize">{animal.gender}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Age</p>
-                  <p className="font-medium">{animal.age || "N/A"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Weight</p>
-                  <p className="font-medium">{animal.weight || "N/A"}</p>
-                </div>
-                <div className="col-span-2 md:col-span-3">
-                  <p className="text-sm text-muted-foreground flex items-center gap-1">
-                    <MapPin className="h-3 w-3" /> Farm
-                  </p>
-                  <p className="font-medium">Farm soon coming</p>
-                </div>
-              </div>
-              
-              {/* Caretaker */}
-              <div className="p-3 rounded-lg bg-muted/50">
-                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Caretaker</p>
-                {getCaretakerId(animal) ? (
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-primary" />
-                    <span className="font-medium">{getCaretakerName(animal)}</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <UserX className="h-4 w-4 text-destructive" />
-                      <span className="text-muted-foreground">Not assigned</span>
-                    </div>
-                  </div>
-                )}
-              </div>
+      {/* Action bar — Log Update (always) + Record Sale (Active animals only) */}
+      <div className="container mx-auto px-4 pt-4 flex justify-end gap-2">
+        <Button
+          size="sm"
+          className="gap-2"
+          onClick={() => setLogUpdateOpen(true)}
+        >
+          <ClipboardList className="h-4 w-4" />
+          Log Update
+        </Button>
 
-              {/* Veterinarian */}
-              <div className="p-3 rounded-lg bg-muted/50">
-                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Veterinarian</p>
-                {getVeterinarianId(animal) ? (
-                  <div className="flex items-center gap-2">
-                    <Stethoscope className="h-4 w-4 text-primary" />
-                    <span className="font-medium">{getVeterinarianName(animal)}</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <UserX className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Not assigned</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+        {animal.status === "Active" && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-2"
+            onClick={() => setRecordSaleOpen(true)}
+          >
+            <BadgeDollarSign className="h-4 w-4" />
+            Record Sale
+          </Button>
+        )}
+      </div>
 
-          {/* Assignment Section */}
-          <AnimalAssignmentSection 
-            animal={animal}
-            farmId={farmId}
-            userId={user._id}
+      <main className="container mx-auto px-4 py-8 space-y-8">
+        {/* Row 1: Profile + People */}
+        <div className="grid gap-6 lg:grid-cols-5">
+          <AnimalProfileCard animal={animal} />
+
+          <PeopleResponsiblePanel
+            caretakerName={animal.caretaker?.name}
+            caretakerEmail={animal.caretaker?.email}
+            caretakerId={animal.caretaker?.id}
+            veterinarianName={animal.veterinarian?.name}
+            veterinarianEmail={animal.veterinarian?.email}
+            veterinarianId={animal.veterinarian?.id}
+            canAssign={isOwner}
+            canUnassign={isOwner}
+            isLoading={isUnassigning}
+            onAssignCaretaker={() => openAssignModal("caretaker")}
+            onAssignVeterinarian={() => openAssignModal("veterinarian")}
+            onUnassignCaretaker={() => requestUnassign(UserRole.CARETAKER)}
+            onUnassignVeterinarian={() => requestUnassign(UserRole.VETERINARIAN)}
           />
-
-          {/* Updates */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Updates</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3, 4, 5].map(i => (
-                    <Skeleton key={i} className="h-12" />
-                  ))}
-                </div>
-              ) : updates.length > 0 ? (
-                <div className="space-y-3">
-                  {updates.map((update) => (
-                    <div key={update.id} className="flex items-start gap-3 p-3 border rounded-lg">
-                      <div className="flex-shrink-0">
-                        {getUpdateIcon(update.type)}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium">{update.notes}</p>
-                        <p className="text-sm text-muted-foreground">{update.date}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>No updates recorded for this animal</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </div>
+
+        {/* Row 2: Lineage */}
+        <LineageSection animal={animal} farmId={farmId!} />
+
+        {/* Row 3: Health actions */}
+        <HealthActions />
+
+        {/* Row 4: Compliance actions */}
+        <Card className="border-destructive/20 bg-destructive/5">
+          <CardHeader>
+            <CardTitle className="text-destructive flex items-center gap-2 text-lg">
+              <Skull className="h-5 w-5" />
+              Compliance Actions
+            </CardTitle>
+            <CardDescription>Legal and mortality reporting</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-3">
+            <Button
+              variant="destructive"
+              className="gap-2"
+              onClick={() => navigate(`/compliance/death-cases/new/${animalId}`)}
+            >
+              <Skull className="h-4 w-4" />
+              Report Death
+            </Button>
+            <Button variant="outline" className="gap-2">
+              <FileText className="h-4 w-4" />
+              View Legal Records
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Row 5: Recent history */}
+        <RecentHistory
+          events={historyEvents}
+          loading={historyLoading}
+          maxItems={5}
+          onViewAll={handleViewFullHistory}
+          title="Recent Activity"
+          emptyMessage="No updates logged yet"
+          emptyDescription="Log health checks, vaccinations, weight measurements, and breeding events here."
+          emptyAction={{ label: "Log First Update", onClick: () => setLogUpdateOpen(true) }}
+        />
       </main>
+
+      {/* Log Update Dialog */}
+      <Dialog open={logUpdateOpen} onOpenChange={setLogUpdateOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Log Update — {animal.name}{" "}
+              <span className="text-muted-foreground font-mono text-sm">
+                #{animal.tagNumber}
+              </span>
+            </DialogTitle>
+          </DialogHeader>
+          <AnimalUpdateForm
+            animalId={animalId!}
+            farmId={farmId!}
+            onSuccess={() => {
+              setLogUpdateOpen(false);
+              invalidateHistory(animalId!);
+                  }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Record Sale Dialog */}
+      <Dialog open={recordSaleOpen} onOpenChange={setRecordSaleOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Record Sale — {animal.name}{" "}
+              <span className="text-muted-foreground font-mono text-sm">
+                #{animal.tagNumber}
+              </span>
+            </DialogTitle>
+          </DialogHeader>
+          <SellAnimalForm
+            animalId={animalId!}
+            farmId={farmId!}
+            animalName={animal.name}
+            animalStatus={animal.status}
+            onSuccess={() => {
+              setRecordSaleOpen(false);
+              invalidateHistory(animalId!);
+                  }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialogs */}
+      <AssignPersonDialog
+        open={assignModalOpen}
+        onOpenChange={setAssignModalOpen}
+        role={assignRole}
+        animalName={animal.name}
+        animalId={animal.id}
+        farmId={farmId ?? ""}
+        currentAssigneeId={
+          assignRole === "caretaker" ? animal.caretaker?.id : animal.veterinarian?.id
+        }
+        currentAssigneeName={
+          assignRole === "caretaker" ? animal.caretaker?.name : animal.veterinarian?.name
+        }
+        onAssignmentChange={handleAssignmentChange}
+      />
+
+      <ConfirmActionDialog
+        open={isConfirmOpen}
+        title={`Unassign ${
+          unassignRole === UserRole.CARETAKER ? "Caretaker" : "Veterinarian"
+        }?`}
+        description={
+          unassignRole === UserRole.CARETAKER
+            ? `This will remove ${animal.caretaker?.name} as the caretaker.`
+            : `This will remove ${animal.veterinarian?.name} as the veterinarian.`
+        }
+        confirmText="Unassign"
+        destructive
+        isLoading={isUnassigning}
+        onConfirm={handleConfirmUnassign}
+        onOpenChange={(open) => {
+          if (isUnassigning) return;
+          if (!open) setUnassignRole(null);
+        }}
+      />
     </div>
   );
 };

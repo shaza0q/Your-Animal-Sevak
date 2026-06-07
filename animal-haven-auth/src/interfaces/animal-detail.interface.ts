@@ -1,49 +1,57 @@
-import { AnimalType } from "@/enums/animal-type.enum";
+export interface AnimalLineageNode {
+  id: string;
+  tagNumber: string;
+  animalType: string;
+  breed: string;
+  gender?: string;
+  status: string;
+  dateOfBirth?: string | null;
+}
 
 export interface AnimalDetail {
-  _id: string;
   id: string;
   tagNumber: string;
   name: string;
-  animalType: AnimalType;
+  animalType: string;
   breed: string;
   gender: string;
-  weight?: number;
+  generation?: number;
+  weight?: number | null;
   status: string;
   age?: number | null;
   dateOfBirth?: string | null;
+  acquisitionDate?: string | null;
+  motherId?: string | null;
+  fatherId?: string | null;
   farm: {
-    _id: string;
+    id: string;
+    name: string;
   };
+  mother?: AnimalLineageNode | null;
+  father?: AnimalLineageNode | null;
+  children?: AnimalLineageNode[];
   caretaker: {
-    _id: string;
+    id: string;
     name: string;
     email: string;
   } | null;
   veterinarian: {
-    _id: string;
+    id: string;
     name: string;
     email: string;
   } | null;
 }
 
-// Helper functions to compute derived properties
-export const getCaretakerId = (animal: AnimalDetail): string | undefined => {
-  return animal.caretaker?._id;
-};
+export const getCaretakerId = (animal: AnimalDetail): string | undefined =>
+  animal.caretaker?.id;
 
-export const getVeterinarianId = (animal: AnimalDetail): string | undefined => {
-  return animal.veterinarian?._id;
-};
+export const getVeterinarianId = (animal: AnimalDetail): string | undefined =>
+  animal.veterinarian?.id;
 
-export const getCaretakerName = (animal: AnimalDetail): string | undefined => {
-  return animal.caretaker?.name;
-};
+export const getCaretakerName = (animal: AnimalDetail): string | undefined =>
+  animal.caretaker?.name;
 
-export const getVeterinarianName = (animal: AnimalDetail): string | undefined => {
-  return animal.veterinarian?.name;
-};
+export const getVeterinarianName = (animal: AnimalDetail): string | undefined =>
+  animal.veterinarian?.name;
 
-export const getAnimalType = (animal: AnimalDetail): string => {
-  return animal.animalType;
-};
+export const getAnimalType = (animal: AnimalDetail): string => animal.animalType;

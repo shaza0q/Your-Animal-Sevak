@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Card,
@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -19,614 +19,516 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
   ArrowLeft,
+  Search,
+  SearchX,
+  SlidersHorizontal,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  PawPrint,
   User,
   UserX,
   Stethoscope,
-  Filter,
-  X,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
+  Activity,
 } from "lucide-react";
-import { Animal } from "@/types/animal";
+import { EmptyState } from "@/components/EmptyState";
+import { ErrorMessage } from "@/components/ErrorMessage";
 import { fetchUser } from "@/utils/fetchUser";
 import { AnimalType } from "@/enums/animal-type.enum";
-import { fetchFarm } from "@/utils/fetchFarm";
-import { FarmSummaryDto } from "@/interface/farm.interface";
-import { fetchFarmAnimals } from "@/utils/fetchFarmAnimals";
-import LoadingState from "@/components/LoadingState";
 import { cn } from "@/lib/utils";
 import { User as UserInterface } from "@/interface/user.interface";
+import { useAnimals, AnimalsFilters } from "@/hooks/useAnimals";
+import { AnimalListItem } from "@/api/getAnimalsData";
+import { format, differenceInMonths, differenceInYears } from "date-fns";
 
-interface FilterState {
-  assigned: "all" | "true" | "false";
-  gender: "all" | "male" | "female";
-  breed: string;
-  caretakerName: string;
-  vetName: string;
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const ANIMAL_TYPES = Object.values(AnimalType);
+
+function calcAge(dob: string | null): string {
+  if (!dob) return "Unknown";
+  const birth = new Date(dob);
+  const years = differenceInYears(new Date(), birth);
+  const months = differenceInMonths(new Date(), birth) % 12;
+  if (years === 0) return months <= 0 ? "< 1 month" : `${months} mo`;
+  return months > 0 ? `${years} yr ${months} mo` : `${years} yr`;
 }
 
-const defaultFilters: FilterState = {
-  assigned: "all",
-  gender: "all",
-  breed: "",
-  caretakerName: "",
-  vetName: "",
+const statusConfig: Record<string, { label: string; className: string }> = {
+  Active: {
+    label: "Active",
+    className: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30 dark:text-emerald-400",
+  },
+  Sold: {
+    label: "Sold",
+    className: "bg-blue-500/15 text-blue-700 border-blue-500/30 dark:text-blue-400",
+  },
+  Deceased: {
+    label: "Deceased",
+    className: "bg-slate-500/15 text-slate-600 border-slate-500/30 dark:text-slate-400",
+  },
 };
+
+const genderConfig: Record<string, string> = {
+  Male: "bg-sky-500/15 text-sky-700 border-sky-500/30 dark:text-sky-400",
+  Female: "bg-pink-500/15 text-pink-700 border-pink-500/30 dark:text-pink-400",
+};
+
+// ─── Skeleton card ────────────────────────────────────────────────────────────
+const AnimalCardSkeleton = () => (
+  <Card className="border-border/50">
+    <CardHeader className="pb-2 pt-4 px-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-3.5 w-48" />
+        </div>
+        <Skeleton className="h-5 w-16 rounded-full shrink-0" />
+      </div>
+    </CardHeader>
+    <CardContent className="pt-2 pb-4 px-4 space-y-2">
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-3/4" />
+    </CardContent>
+  </Card>
+);
+
+// ─── Animal card ──────────────────────────────────────────────────────────────
+interface AnimalCardProps {
+  animal: AnimalListItem;
+  farmId: string;
+  isOwner: boolean;
+}
+
+const AnimalCard = ({ animal, farmId, isOwner }: AnimalCardProps) => {
+  const navigate = useNavigate();
+  const status = statusConfig[animal.status] ?? {
+    label: animal.status,
+    className: "bg-muted text-muted-foreground",
+  };
+  const genderClass = genderConfig[animal.gender] ?? "";
+
+  return (
+    <Card
+      className="cursor-pointer hover:shadow-md hover:border-primary/40 transition-all border-border/50 group"
+      onClick={() => navigate(`/farms/${farmId}/animals/${animal.id}`)}
+    >
+      <CardHeader className="pb-2 pt-4 px-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <CardTitle className="text-base font-semibold leading-tight truncate group-hover:text-primary transition-colors">
+              {animal.name}
+            </CardTitle>
+            <CardDescription className="text-xs mt-0.5 font-mono">
+              #{animal.tagNumber}
+              <span className="font-sans mx-1">·</span>
+              {animal.animalType}
+              {animal.breed && ` · ${animal.breed}`}
+            </CardDescription>
+          </div>
+          <Badge
+            variant="outline"
+            className={cn("shrink-0 text-xs font-medium", status.className)}
+          >
+            {status.label}
+          </Badge>
+        </div>
+      </CardHeader>
+
+      <CardContent className="pt-0 pb-4 px-4 space-y-2">
+        {/* Gender + Age row */}
+        <div className="flex items-center gap-2">
+          {animal.gender && (
+            <Badge
+              variant="outline"
+              className={cn("text-xs px-2 py-0 h-5", genderClass)}
+            >
+              {animal.gender}
+            </Badge>
+          )}
+          <span className="text-xs text-muted-foreground">
+            {calcAge(animal.dateOfBirth)}
+          </span>
+          {animal.updatesCount > 0 && (
+            <span className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
+              <Activity className="h-3 w-3" />
+              {animal.updatesCount}
+            </span>
+          )}
+        </div>
+
+        {/* Caretaker */}
+        <div className="flex items-center gap-2 text-sm">
+          {animal.caretaker?.id ? (
+            <>
+              <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <span className="text-muted-foreground truncate text-xs">
+                {animal.caretaker.name}
+              </span>
+            </>
+          ) : (
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-1.5">
+                <UserX className="h-3.5 w-3.5 text-amber-500/70 shrink-0" />
+                <span className="text-xs text-muted-foreground">Unassigned</span>
+              </div>
+              {isOwner && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 text-xs px-2"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/farms/${farmId}/animals/${animal.id}?assign=caretaker`);
+                  }}
+                >
+                  Assign
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Vet */}
+        {animal.veterinarian?.id && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Stethoscope className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{animal.veterinarian.name}</span>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+// ─── Main page ────────────────────────────────────────────────────────────────
+const LIMIT = 12;
 
 const AnimalsByCategory = () => {
   const navigate = useNavigate();
   const { farmId, animalType } = useParams<{
     farmId: string;
-    animalType: AnimalType;
+    animalType: string;
   }>();
+
   const [user, setUser] = useState<UserInterface | null>(null);
-  const [farm, setFarm] = useState<FarmSummaryDto | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isOwner] = useState(true); // Mock: would come from permissions check
-  const [animalsData, setAnimalsData] = useState<{
-    animals: Animal[];
-    meta: {
-      page: number;
-      limit: number;
-      total: number;
-    };
-  } | null>(null);
 
-  const [filters, setFilters] = useState<FilterState>(defaultFilters);
-  const [appliedFilters, setAppliedFilters] =
-    useState<FilterState>(defaultFilters);
-  const [isFilterOpen, setIsFilterOpen] = useState(true);
-
-  // Pagination state
+  // Filter state
+  const [searchInput, setSearchInput] = useState("");
+  const [filters, setFilters] = useState<AnimalsFilters>({
+    animalType: animalType,
+    status: undefined,
+    gender: undefined,
+    breed: undefined,
+    search: undefined,
+  });
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
 
+  // Auth
   useEffect(() => {
-    const init = async () => {
-      try {
-        setLoading(true);
+    fetchUser()
+      .then(setUser)
+      .catch(() => navigate("/signin", { replace: true }));
+  }, [navigate]);
 
-        const userData = await fetchUser();
-        setUser(userData);
+  // Sync animalType URL param into filters
+  useEffect(() => {
+    setFilters((prev) => ({ ...prev, animalType }));
+    setPage(1);
+  }, [animalType]);
 
-        const farmData = await fetchFarm(farmId);
-        setFarm(farmData);
+  // Debounced search — 400 ms
+  useEffect(() => {
+    const id = setTimeout(() => {
+      setFilters((prev) => ({ ...prev, search: searchInput.trim() || undefined }));
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(id);
+  }, [searchInput]);
 
-        const animalsData = await fetchFarmAnimals(
-          farmId,
-          animalType,
-          page,
-          limit,
-          appliedFilters.assigned === "all"
-            ? undefined
-            : appliedFilters.assigned === "true",
-          appliedFilters.gender === "all" ? undefined : appliedFilters.gender,
-          appliedFilters.breed.trim() || undefined,
-          appliedFilters.caretakerName.trim() || undefined,
-          appliedFilters.vetName.trim() || undefined,
-        );
-        setAnimalsData(animalsData);
-      } catch (error) {
-        setUser(null);
-        navigate("/signin", { replace: true });
-      } finally {
-        setLoading(false);
-      }
-    };
+  const setFilter = useCallback(
+    <K extends keyof AnimalsFilters>(key: K, value: AnimalsFilters[K]) => {
+      setFilters((prev) => ({ ...prev, [key]: value }));
+      setPage(1);
+    },
+    [],
+  );
 
-    if (farmId && animalType) init();
-  }, [farmId, animalType, page, navigate, appliedFilters]);
+  const clearFilters = useCallback(() => {
+    setSearchInput("");
+    setFilters({ animalType, status: undefined, gender: undefined, breed: undefined, search: undefined });
+    setPage(1);
+  }, [animalType]);
 
-  const allAnimals = animalsData?.animals ?? [];
-  const displayType = animalType
-    ? animalType.charAt(0).toUpperCase() + animalType.slice(1)
-    : "";
-  const total = animalsData?.meta?.[0]?.total ?? 0;
+  const handleTypeChange = (value: string) => {
+    if (value === "__all__") {
+      navigate(`/farms/${farmId}/animals`);
+    } else {
+      navigate(`/farms/${farmId}/animals/type/${value}`);
+    }
+  };
 
-  // Early returns AFTER all hooks
-  if (!user) return null;
+  // TanStack Query
+  const { data, isLoading, isError, error, refetch, isPlaceholderData } = useAnimals(
+    farmId,
+    filters,
+    page,
+    LIMIT,
+  );
 
-  if (!farm) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="w-96">
-          <CardHeader>
-            <CardTitle>Farm Not Found</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-4">
-              The requested farm could not be found.
-            </p>
-            <Button onClick={() => navigate("/dashboard")}>
-              Back to Directory
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // Pagination calculations
-  const totalItems = allAnimals.length;
-  const totalPages = Math.ceil(total / limit);
-  const startIndex = (page - 1) * limit;
-  const endIndex = startIndex + limit;
-  const paginatedAnimals = allAnimals.slice(startIndex, endIndex);
+  const animals = data?.data ?? [];
+  const pagination = data?.pagination;
+  const totalItems = pagination?.total ?? 0;
+  const totalPages = pagination?.totalPages ?? 1;
 
   const hasActiveFilters =
-    appliedFilters.assigned !== "all" ||
-    appliedFilters.gender !== "all" ||
-    appliedFilters.breed.trim() !== "" ||
-    appliedFilters.caretakerName.trim() !== "" ||
-    appliedFilters.vetName.trim() !== "";
+    !!filters.status ||
+    !!filters.gender ||
+    !!filters.breed ||
+    !!filters.search;
 
-  const hasPendingFilters =
-    JSON.stringify(filters) !== JSON.stringify(appliedFilters);
+  const displayType =
+    animalType
+      ? animalType.charAt(0).toUpperCase() + animalType.slice(1)
+      : "All Animals";
 
-  const handleApplyFilters = () => {
-    setAppliedFilters({ ...filters });
-    setPage(1); // Reset to first page when filters change
-  };
-
-  const handleClearFilters = () => {
-    setFilters(defaultFilters);
-    setAppliedFilters(defaultFilters);
-    setPage(1);
-    setLoading(true);
-    setTimeout(() => setLoading(false), 300);
-  };
-
-  const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setPage(newPage);
-      setLoading(true);
-      setTimeout(() => setLoading(false), 200);
-    }
-  };
-
-  const handleLimitChange = (newLimit: string) => {
-    setLimit(Number(newLimit));
-    setPage(1);
-    setLoading(true);
-    setTimeout(() => setLoading(false), 200);
-  };
-
-  const getStatusBadgeClasses = (status: Animal["status"]) => {
-    switch (status) {
-      case "healthy":
-        return "badge-healthy";
-      case "pregnant":
-        return "badge-pregnant";
-      case "vaccined":
-        return "badge-vaccinated";
-      case "injured":
-      case "diseased":
-        return "bg-destructive/15 text-destructive border-destructive/30";
-      case "sold":
-        return "bg-muted text-muted-foreground border-border";
-      default:
-        return "default";
-    }
-  };
-
-  if (loading && paginatedAnimals.length === 0) {
-    return (
-      <LoadingState
-        message={`Loading ${displayType.toLowerCase()}s for ${farm.name}...`}
-      />
-    );
-  }
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-card border-border/60 bg-card/80 backdrop-blur-sm">
+      <header className="border-b border-border/60 bg-card/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(`/farms/${farmId}/animals`)}
-              className="hover:bg-muted/60"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">
-                {displayType}s at {farm.name}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {allAnimals.length}{" "}
-                {allAnimals.length === 1 ? "animal" : "animals"}
-              </p>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate(`/farms/${farmId}/animals`)}
+                className="hover:bg-muted/60 shrink-0"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div>
+                <h1 className="text-xl font-bold text-foreground">
+                  {displayType}s
+                </h1>
+                {totalItems > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {totalItems} animal{totalItems !== 1 ? "s" : ""}
+                  </p>
+                )}
+              </div>
             </div>
+            <Button
+              size="sm"
+              onClick={() => navigate("/addAnimal")}
+              className="gap-1.5"
+            >
+              <Plus className="h-4 w-4" />
+              Add Animal
+            </Button>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6">
-        {/* Filter Section */}
-        <Collapsible
-          open={isFilterOpen}
-          onOpenChange={setIsFilterOpen}
-          className="mb-6"
-        >
-          <Card className="border-border/50 shadow-sm">
-            <CollapsibleTrigger asChild>
-              <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors py-3 px-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Filter className="h-4 w-4 text-muted-foreground" />
-                    <CardTitle className="text-base font-medium">
-                      Filters
-                    </CardTitle>
-                    {hasActiveFilters && (
-                      <Badge
-                        variant="secondary"
-                        className="ml-2 text-xs px-2 py-0"
-                      >
-                        Active
-                      </Badge>
-                    )}
-                  </div>
-                  <ChevronDown
-                    className={cn(
-                      "h-4 w-4 text-muted-foreground transition-transform duration-200",
-                      isFilterOpen && "rotate-180",
-                    )}
-                  />
-                </div>
-              </CardHeader>
-            </CollapsibleTrigger>
+      <main className="container mx-auto px-4 py-6 space-y-6">
+        {/* ── Filter bar ── */}
+        <Card className="border-border/50 shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Filters</span>
+              {hasActiveFilters && (
+                <Badge variant="secondary" className="text-xs px-1.5 py-0 h-4 ml-1">
+                  Active
+                </Badge>
+              )}
+            </div>
 
-            <CollapsibleContent className="data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up overflow-hidden">
-              <CardContent className="pt-0 pb-4 px-4">
-                {/* Row 1: Assignment, Gender, Breed */}
-                <div className="grid gap-4 sm:grid-cols-3 mb-4">
-                  {/* Assignment Filter */}
-                  <div className="space-y-1.5">
-                    <Label
-                      htmlFor="assigned"
-                      className="text-xs font-medium text-muted-foreground"
-                    >
-                      Assignment
-                    </Label>
-                    <Select
-                      value={filters.assigned}
-                      onValueChange={(value: FilterState["assigned"]) =>
-                        setFilters((prev) => ({ ...prev, assigned: value }))
-                      }
-                    >
-                      <SelectTrigger id="assigned" className="h-9">
-                        <SelectValue placeholder="All" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All</SelectItem>
-                        <SelectItem value="true">Assigned</SelectItem>
-                        <SelectItem value="false">Unassigned</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Gender Filter */}
-                  <div className="space-y-1.5">
-                    <Label
-                      htmlFor="gender"
-                      className="text-xs font-medium text-muted-foreground"
-                    >
-                      Gender
-                    </Label>
-                    <Select
-                      value={filters.gender}
-                      onValueChange={(value: FilterState["gender"]) =>
-                        setFilters((prev) => ({ ...prev, gender: value }))
-                      }
-                    >
-                      <SelectTrigger id="gender" className="h-9">
-                        <SelectValue placeholder="All" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All</SelectItem>
-                        <SelectItem value="male">Male</SelectItem>
-                        <SelectItem value="female">Female</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Breed Filter */}
-                  <div className="space-y-1.5">
-                    <Label
-                      htmlFor="breed"
-                      className="text-xs font-medium text-muted-foreground"
-                    >
-                      Breed
-                    </Label>
-                    <Input
-                      id="breed"
-                      placeholder="Search breed..."
-                      value={filters.breed}
-                      onChange={(e) =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          breed: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-
-                  {/* Caretaker Name Filter */}
-                  <div className="space-y-1.5">
-                    <Label
-                      htmlFor="caretakerName"
-                      className="text-xs font-medium text-muted-foreground"
-                    >
-                      Caretaker
-                    </Label>
-                    <Input
-                      id="caretakerName"
-                      placeholder="Search caretaker..."
-                      value={filters.caretakerName}
-                      onChange={(e) =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          caretakerName: e.target.value,
-                        }))
-                      }
-                      className="h-9"
-                    />
-                  </div>
-
-                  {/* Veterinarian Name Filter */}
-                  <div className="space-y-1.5">
-                    <Label
-                      htmlFor="vetName"
-                      className="text-xs font-medium text-muted-foreground"
-                    >
-                      Veterinarian
-                    </Label>
-                    <Input
-                      id="vetName"
-                      placeholder="Search vet..."
-                      value={filters.vetName}
-                      onChange={(e) =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          vetName: e.target.value,
-                        }))
-                      }
-                      className="h-9"
-                    />
-                  </div>
-                </div>
-
-                {/* Filter Actions */}
-                <div className="flex items-center gap-3 pt-3 border-t border-border/50">
-                  <Button onClick={handleApplyFilters} size="sm">
-                    Apply Filters
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    onClick={handleClearFilters}
-                    size="sm"
-                    className={cn(
-                      "text-muted-foreground",
-                      (hasActiveFilters || hasPendingFilters) &&
-                        "text-foreground hover:text-destructive",
-                    )}
-                    disabled={!hasActiveFilters && !hasPendingFilters}
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 mt-3">
+              {/* Search by tag number */}
+              <div className="relative lg:col-span-2">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Search by tag number…"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  className="pl-8 h-9 text-sm"
+                />
+                {searchInput && (
+                  <button
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    onClick={() => setSearchInput("")}
                   >
-                    <X className="h-3.5 w-3.5 mr-1.5" />
-                    Clear Filters
-                  </Button>
-                </div>
-              </CardContent>
-            </CollapsibleContent>
-          </Card>
-        </Collapsible>
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
 
-        {/* Animal Cards */}
-        {loading ? (
+              {/* Animal type */}
+              <Select
+                value={animalType ?? "__all__"}
+                onValueChange={handleTypeChange}
+              >
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="All types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All types</SelectItem>
+                  {ANIMAL_TYPES.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {t}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Status */}
+              <Select
+                value={filters.status ?? "__all__"}
+                onValueChange={(v) =>
+                  setFilter("status", v === "__all__" ? undefined : v)
+                }
+              >
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="All statuses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All statuses</SelectItem>
+                  <SelectItem value="Active">Active</SelectItem>
+                  <SelectItem value="Sold">Sold</SelectItem>
+                  <SelectItem value="Deceased">Deceased</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Gender */}
+              <Select
+                value={filters.gender ?? "__all__"}
+                onValueChange={(v) =>
+                  setFilter("gender", v === "__all__" ? undefined : v)
+                }
+              >
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="All genders" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All genders</SelectItem>
+                  <SelectItem value="Male">Male</SelectItem>
+                  <SelectItem value="Female">Female</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Clear filters */}
+            {hasActiveFilters && (
+              <div className="mt-3 pt-3 border-t border-border/40">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="h-7 text-xs text-muted-foreground hover:text-destructive px-2"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Clear filters
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* ── Animal grid: loading → error → empty → content ── */}
+        {isLoading ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: limit > 6 ? 6 : limit }).map((_, i) => (
-              <Card key={i} className="animate-pulse border-border/50">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="h-5 w-28 bg-muted rounded mb-2" />
-                      <div className="h-3.5 w-40 bg-muted/70 rounded" />
-                    </div>
-                    <div className="h-5 w-16 bg-muted rounded-full" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-4 w-full bg-muted/50 rounded mb-2" />
-                  <div className="h-4 w-3/4 bg-muted/50 rounded" />
-                </CardContent>
-              </Card>
+            {Array.from({ length: LIMIT }).map((_, i) => (
+              <AnimalCardSkeleton key={i} />
             ))}
           </div>
-        ) : paginatedAnimals.length === 0 ? (
+        ) : isError ? (
+          <ErrorMessage
+            error={error}
+            onRetry={() => refetch()}
+            title="Could not load animals"
+          />
+        ) : animals.length === 0 ? (
+          /* ── Empty states (three distinct cases) ── */
           <Card className="border-border/50">
-            <CardContent className="p-12 text-center">
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                {hasActiveFilters
-                  ? "No Results Found"
-                  : `No ${displayType}s Found`}
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                {hasActiveFilters
-                  ? "No animals match the applied filters. Try adjusting your search criteria."
-                  : `There are no ${displayType.toLowerCase()}s registered in this farm.`}
-              </p>
-              {hasActiveFilters ? (
-                <Button
-                  variant="outline"
-                  onClick={handleClearFilters}
-                  size="sm"
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Clear Filters
-                </Button>
-              ) : (
-                <Button onClick={() => navigate(`/farms/${farmId}/animals`)}>
-                  Back to Categories
-                </Button>
-              )}
-            </CardContent>
+            {filters.search ? (
+              <EmptyState
+                icon={SearchX}
+                title={`No animals found for "${filters.search}"`}
+                description="Check the tag number and try again."
+                action={{ label: "Clear search", onClick: () => setSearchInput("") }}
+              />
+            ) : hasActiveFilters ? (
+              <EmptyState
+                icon={SearchX}
+                title="No animals match your filters"
+                description="Try adjusting or clearing your filters."
+                action={{ label: "Clear filters", onClick: clearFilters }}
+              />
+            ) : (
+              <EmptyState
+                icon={PawPrint}
+                title="No animals registered yet"
+                description="Register your first animal to start tracking health, vaccinations, and updates."
+                action={{ label: "Add Animal", to: "/addAnimal" }}
+              />
+            )}
           </Card>
         ) : (
           <>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {paginatedAnimals.map((animal) => (
-                <Card
+            <div
+              className={cn(
+                "grid gap-4 md:grid-cols-2 lg:grid-cols-3 transition-opacity",
+                isPlaceholderData && "opacity-60",
+              )}
+            >
+              {animals.map((animal) => (
+                <AnimalCard
                   key={animal.id}
-                  className="cursor-pointer card-hover-lift border-border/50 hover:border-primary/40"
-                  onClick={() =>
-                    navigate(`/farms/${farmId}/animals/${animal.id}`)
-                  }
-                >
-                  <CardHeader className="pb-2 pt-4 px-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <CardTitle className="text-lg font-semibold leading-tight truncate">
-                          {animal.name}
-                        </CardTitle>
-                        <CardDescription className="text-sm mt-0.5">
-                          {animal.tagNumber} · {animal.breed}
-                        </CardDescription>
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "shrink-0 text-xs font-medium capitalize",
-                          getStatusBadgeClasses(animal.status),
-                        )}
-                      >
-                        {animal.status}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-2 pb-4 px-4 space-y-2.5">
-                    <div className="text-sm text-muted-foreground">
-                      {animal.farmName}
-                    </div>
-
-                    {/* Caretaker Assignment */}
-                    <div className="flex items-center gap-2 text-sm">
-                      {animal.caretakerId ? (
-                        <>
-                          <User className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-muted-foreground truncate">
-                            {animal.caretakerName}
-                          </span>
-                        </>
-                      ) : (
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center gap-2">
-                            <UserX className="h-3.5 w-3.5 text-destructive/70" />
-                            <Badge
-                              variant="outline"
-                              className="badge-unassigned text-xs px-1.5 py-0 h-5"
-                            >
-                              Not Assigned
-                            </Badge>
-                          </div>
-                          {isOwner && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="ml-auto h-7 text-xs"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(
-                                  `/farms/${farmId}/animals/${animal.id}?assign=caretaker`,
-                                );
-                              }}
-                            >
-                              Assign
-                            </Button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Veterinarian */}
-                    {animal.veterinarianId && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Stethoscope className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-muted-foreground truncate">
-                          {animal.veterinarianName}
-                        </span>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                  animal={animal}
+                  farmId={farmId!}
+                  isOwner={true}
+                />
               ))}
             </div>
 
-            {/* Pagination Controls */}
-            {totalPages > 0 && (
-              <div className="mt-6 py-3 px-4 bg-muted/30 rounded-lg border border-border/40">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-                  {/* Page Size Selector */}
-                  <div className="flex items-center gap-2">
-                    <Label
-                      htmlFor="pageSize"
-                      className="text-xs text-muted-foreground whitespace-nowrap"
-                    >
-                      Show:
-                    </Label>
-                    <Select
-                      value={String(limit)}
-                      onValueChange={handleLimitChange}
-                    >
-                      <SelectTrigger id="pageSize" className="w-16 h-7 text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="10">10</SelectItem>
-                        <SelectItem value="20">20</SelectItem>
-                        <SelectItem value="50">50</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+            {/* ── Pagination ── */}
+            {totalPages > 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 py-3 px-4 bg-muted/30 rounded-lg border border-border/40">
+                <p className="text-xs text-muted-foreground order-last sm:order-first">
+                  Showing {(page - 1) * LIMIT + 1}–
+                  {Math.min(page * LIMIT, totalItems)} of {totalItems} animals
+                </p>
 
-                  {/* Page Indicator */}
-                  <div className="text-xs text-muted-foreground text-center order-first sm:order-none">
-                    Page {page} of {totalPages} · Showing {startIndex + 1}–
-                    {Math.min(endIndex, totalItems)}
-                  </div>
+                <p className="text-xs text-muted-foreground">
+                  Page {page} of {totalPages}
+                </p>
 
-                  {/* Navigation Buttons */}
-                  <div className="flex items-center gap-1.5">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handlePageChange(page - 1)}
-                      disabled={page <= 1}
-                      className="h-7 px-2 text-xs"
-                    >
-                      <ChevronLeft className="h-3.5 w-3.5 mr-0.5" />
-                      Prev
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handlePageChange(page + 1)}
-                      disabled={page >= totalPages}
-                      className="h-7 px-2 text-xs"
-                    >
-                      Next
-                      <ChevronRight className="h-3.5 w-3.5 ml-0.5" />
-                    </Button>
-                  </div>
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page <= 1 || isLoading}
+                  >
+                    <ChevronLeft className="h-3.5 w-3.5 mr-0.5" />
+                    Prev
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages || isLoading}
+                  >
+                    Next
+                    <ChevronRight className="h-3.5 w-3.5 ml-0.5" />
+                  </Button>
                 </div>
               </div>
             )}

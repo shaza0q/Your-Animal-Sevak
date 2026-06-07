@@ -7,18 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
+import { parseApiError } from "@/lib/errorUtils";
 import { getAllFarmData } from "@/api/getAllFarmData"
 import { registerAnimal } from "@/api/registerAnimal"
 import { getBreedData } from "@/api/getBreedData"
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { 
-  Beef, 
-  Heart, 
-  DollarSign, 
-  Camera, 
-  ArrowLeft,
-  Save
-} from "lucide-react";
+import { Beef, DollarSign, ArrowLeft, Save, Plus } from "lucide-react";
+import { EmptyState } from "@/components/EmptyState";
 
 interface Breed {
   animalType: string;
@@ -34,7 +29,7 @@ const AddAnimal = () => {
   }>();
   const preselectedFarmId = location.state?.farmId || farmId || "";
 
-  const [farmData, setFarmData] = useState<Array<{ _id: string; name: string }> | null>(null)
+  const [farmData, setFarmData] = useState<Array<{ id: string; name: string }> | null>(null)
   const [breedData, setBreedData] = useState<[Breed] | null>()
   const [availableBreeds, setAvailableBreeds] = useState<string[] | null>()
   
@@ -61,7 +56,7 @@ const AddAnimal = () => {
     
         setFarmData(response);
 
-        if (preselectedFarmId && response.some((f) => f._id === preselectedFarmId)) {
+        if (preselectedFarmId && response.some((f) => f.id === preselectedFarmId)) {
           setFormData(prev => ({ ...prev, farmId: preselectedFarmId }));
         }
   
@@ -149,12 +144,12 @@ const AddAnimal = () => {
       // Navigate back to dashboard after submission
       setTimeout(() => navigate("/dashboard"), 1000);
     }
-    catch (err: any) {
+    catch (err: unknown) {
       console.error("Error while registering animal:", err);
-
+      const { message } = parseApiError(err);
       toast({
-        title: "Failed to Add Animal Data",
-        description: err?.message || "An unexpected error occurred while adding the animal.",
+        title: "Failed to register animal",
+        description: message,
         variant: "destructive",
       });
     }
@@ -191,6 +186,17 @@ const AddAnimal = () => {
             Enter the animal’s details below.
           </p>
 
+          {farmData !== null && farmData.length === 0 && (
+            <EmptyState
+              icon={Plus}
+              title="No farms registered yet"
+              description="You need at least one farm before you can add animals. Create a farm first, then come back here."
+              action={{ label: "Create a Farm", to: "/addFarm" }}
+              className="py-16"
+            />
+          )}
+
+          {(farmData === null || farmData.length > 0) && (
           <form onSubmit={handleSubmit} className="space-y-6">
             <Card>
               <CardHeader>
@@ -216,7 +222,7 @@ const AddAnimal = () => {
                     <SelectContent>
                       {farmData && farmData.length > 0 ? (
                         farmData.map((f: any) => (
-                          <SelectItem key={f._id} value={f._id}>
+                          <SelectItem key={f.id} value={f.id}>
                             {f.name}
                           </SelectItem>
                         ))
@@ -227,7 +233,7 @@ const AddAnimal = () => {
                   </Select>
                   {preselectedFarmId && (
                     <p className="text-xs text-muted-foreground">
-                      Preselected: {farmData?.find((f) => f._id === preselectedFarmId)?.name || 'Loading farm name...'}
+                      Preselected: {farmData?.find((f) => f.id === preselectedFarmId)?.name || 'Loading farm name...'}
                     </p>
                   )}
                 </div>
@@ -410,6 +416,7 @@ const AddAnimal = () => {
               </Button>
             </div>
           </form>
+          )}
         </div>
       </main>
     </div>

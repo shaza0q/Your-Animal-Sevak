@@ -26,7 +26,7 @@ export function CaseHeader({ deathCase, className }: CaseHeaderProps) {
     <div className={cn("space-y-4", className)}>
       {/* Top bar */}
       <div className="flex items-center justify-between gap-4">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/death-cases")}>
+        <Button variant="ghost" size="sm" onClick={() => navigate("/compliance/death-cases")}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Cases
         </Button>

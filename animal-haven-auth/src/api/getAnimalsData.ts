@@ -1,56 +1,65 @@
-import axios from "axios";
-import { API_BASE_URL } from '../../cache'
-import { AnimalType } from "@/enums/animal-type.enum";
+import { api } from "@/lib/api";
 
-export const getAnimalsData = async (params: { 
-    farmId: string; 
-    animalType: AnimalType;
-    page?: number;
-    limit?: number;
-    assigned?: boolean;
-    gender?: string;
-    breed?: string;
-    caretakerName?: string;
-    vetName?: string;
-}) => {
-
-    try{
-        const query = new URLSearchParams();
-    
-        query.append("type", params.animalType);
-        if(params.page) query.append("page", params.page.toString());
-        
-        if(params.limit) query.append("limit", params.limit.toString());
-        
-        if (params.assigned !== undefined) {
-            query.append("assigned", params.assigned.toString());
-        }
-
-        if(params.gender) query.append("gender", params.gender);
-        
-        if(params.breed) query.append("breed", params.breed);
-
-        if(params.caretakerName) query.append("caretakerName", params.caretakerName);
-
-        if(params.vetName) query.append("vetName", params.vetName);
-        
-        const res = await axios.get(
-          `${API_BASE_URL}/farms/${params.farmId}/animals?${query.toString()}`,
-          { withCredentials: true }
-        );
-    
-        console.log("---------api getAnimalsData Farm animal fetch success", res.data);
-        return res.data;
-    }
-    catch(error: any){
-        const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "Failed to fetch farm data";
-
-        const customError: any = new Error(errorMessage);
-        customError.status = error.response?.status;
-
-        throw customError;
-    }
+export interface AnimalListItem {
+  id: string;
+  tagNumber: string;
+  name: string;
+  animalType: string;
+  breed: string;
+  gender: string;
+  status: "Active" | "Sold" | "Deceased";
+  dateOfBirth: string | null;
+  weight: number | null;
+  isAssigned: boolean;
+  updatesCount: number;
+  caretaker: { id: string; name: string } | null;
+  veterinarian: { id: string; name: string } | null;
 }
+
+export interface AnimalsListResponse {
+  data: AnimalListItem[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
+export interface GetAnimalsParams {
+  farmId: string;
+  animalType?: string;
+  status?: string;
+  gender?: string;
+  breed?: string;
+  search?: string;
+  assigned?: string;
+  caretakerName?: string;
+  vetName?: string;
+  page?: number;
+  limit?: number;
+}
+
+export const getAnimalsData = async (
+  params: GetAnimalsParams,
+): Promise<AnimalsListResponse> => {
+  const query = new URLSearchParams();
+
+  if (params.animalType) query.append("type", params.animalType);
+  if (params.status) query.append("status", params.status);
+  if (params.gender) query.append("gender", params.gender);
+  if (params.breed) query.append("breed", params.breed);
+  if (params.search) query.append("search", params.search);
+  if (params.assigned) query.append("assigned", params.assigned);
+  if (params.caretakerName) query.append("caretakerName", params.caretakerName);
+  if (params.vetName) query.append("vetName", params.vetName);
+  if (params.page) query.append("page", String(params.page));
+  if (params.limit) query.append("limit", String(params.limit));
+
+  const res = await api.get<AnimalsListResponse>(
+    `/farms/${params.farmId}/animals?${query.toString()}`,
+  );
+  return res.data;
+};

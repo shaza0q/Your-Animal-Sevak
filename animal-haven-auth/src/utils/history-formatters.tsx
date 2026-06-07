@@ -76,7 +76,7 @@ export const formatHistoryEvent = (event: AnimalHistoryEvent): FormattedHistoryI
   const subject = event.user;    // Person who was acted upon
 
   const baseItem = {
-    id: String(event._id), // Ensure string ID for React keys
+    id: String(event.id ?? event._id), // Ensure string ID for React keys
     timestamp,
     user: actor, // Use actor as the user for display
     icon: getIcon(event.type),

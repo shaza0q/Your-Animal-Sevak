@@ -23,7 +23,7 @@ import { ConfirmActionDialog } from "@/components/common/confirm-action-dialog-b
 import { AnimalHistoryEvent } from "@/types/animal-history";
 import { RecentHistory } from "@/components/history/RecentHistory";
 import { fetchAnimalHistory } from "@/api/fetchAnimalHistory";
-import { useHistoryCache } from "@/components/history/AnimalHistoryPage";
+import { useInvalidateAnimalHistory } from "@/hooks/useAnimalHistory";
 import { FileText, Skull } from "lucide-react";
 
 const AnimalDetail = () => {
@@ -34,7 +34,7 @@ const AnimalDetail = () => {
   }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
-  const { invalidateCache } = useHistoryCache();
+  const invalidateHistory = useInvalidateAnimalHistory();
   const [farm, setFarm] = useState<FarmSummaryDto>(null);
 
   const [user, setUser] = useState<User | null>(null);
@@ -151,13 +151,13 @@ const AnimalDetail = () => {
         ? animal.caretaker
         : animal.veterinarian;
 
-    if (!assignedUser?._id) return;
+    if (!assignedUser?.id) return;
 
     setIsUnassigning(true);
     try {
       await unassignAnimalUser(
         animalId,
-        assignedUser._id,
+        assignedUser.id,
         unassignRole.toLowerCase(),
       );
       toast({
@@ -170,7 +170,7 @@ const AnimalDetail = () => {
       
       // Also refetch history to show the unassignment event
       await refetchHistory();
-      invalidateCache();
+      if (animalId) invalidateHistory(animalId);
 
       setUnassignRole(null); // CLOSE DIALOG
     } catch (error) {
@@ -227,10 +227,10 @@ const AnimalDetail = () => {
           <PeopleResponsiblePanel
             caretakerName={animal?.caretaker?.name}
             caretakerEmail={animal?.caretaker?.email}
-            caretakerId={animal?.caretaker?._id}
+            caretakerId={animal?.caretaker?.id}
             veterinarianName={animal?.veterinarian?.name}
             veterinarianEmail={animal?.veterinarian?.email}
-            veterinarianId={animal?.veterinarian?._id}
+            veterinarianId={animal?.veterinarian?.id}
             canAssign={isOwner}
             canUnassign={isOwner}
             isLoading={isUnassigning}
@@ -286,12 +286,12 @@ const AnimalDetail = () => {
         onOpenChange={setAssignModalOpen}
         role={assignRole}
         animalName={animal?.name || ""}
-        animalId={animal?._id || ""}
+        animalId={animal?.id || ""}
         farmId={farmId || ""}
         currentAssigneeId={
           assignRole === "caretaker"
-            ? animal?.caretaker?._id
-            : animal?.veterinarian?._id
+            ? animal?.caretaker?.id
+            : animal?.veterinarian?.id
         }
         currentAssigneeName={
           assignRole === "caretaker"

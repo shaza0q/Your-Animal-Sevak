@@ -10,11 +10,9 @@ export interface Animal {
   weight?: string;
   lastCheckup?: string;
   farmId: string;
-  farmName: string;
-  caretakerId?: string;
-  caretakerName?: string;
-  veterinarianId?: string;
-  veterinarianName?: string;
+  farmName?: string;
+  caretaker?: { id: string; name: string } | null;
+  veterinarian?: { id: string; name: string } | null;
 }
 
 export interface AnimalUpdate {
@@ -36,7 +34,6 @@ export interface AnimalCategory {
 }
 
 export interface FarmUser {
-  _id: string;
   id: string;
   name: string;
   email: string;

@@ -294,9 +294,9 @@
 //                             className={cn(
 //                               "p-4 flex items-center justify-between transition-colors",
 //                               isDisabled ? "opacity-50 cursor-not-allowed bg-muted/20" : "hover:bg-muted/50 cursor-pointer",
-//                               selectedAnimal === animal._id && !isDisabled && "bg-primary/5 border-primary/20"
+//                               selectedAnimal === animal.id && !isDisabled && "bg-primary/5 border-primary/20"
 //                             )}
-//                             onClick={() => !isDisabled && (setSelectedAnimal(animal._id), setSelectedAnimalData(animal))}
+//                             onClick={() => !isDisabled && (setSelectedAnimal(animal.id), setSelectedAnimalData(animal))}
 //                           >
 //                             <div className="flex-1">
 //                               <div className="flex items-center gap-2">
@@ -704,7 +704,6 @@ import {
 } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { generateCaseNumber } from "@/data/mockDeathCases";
 import { searchAnimals } from "@/api/searchAnimals";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -808,7 +807,11 @@ export default function NewDeathCase() {
   const [disposalWitness, setDisposalWitness] = useState("");
   
   // Case metadata
-  const [caseNumber, setCaseNumber] = useState(generateCaseNumber());
+  const [caseNumber] = useState(() => {
+    const year = new Date().getFullYear();
+    const rand = Math.floor(Math.random() * 9000) + 1000;
+    return `DC-${year}-${rand}`;
+  });
   const [workflowStatus, setWorkflowStatus] = useState<WorkflowStatus>("draft");
   const [caseId, setCaseId] = useState<string | null>(null);
 
@@ -945,136 +948,69 @@ export default function NewDeathCase() {
     }
   };
 
-  // Save draft function
+  // Save draft — creates the case record (status stays draft until event is filled)
   const saveDraft = async () => {
-    if (!selectedAnimalData || !role) return;
-    
+    if (!selectedAnimalData) return;
+
     setIsSavingDraft(true);
     try {
-      const draftData = {
-        animalId: selectedAnimal,
-        caseNumber,
-        workflowStatus: "draft" as WorkflowStatus,
-        snapshot: {
-          id: selectedAnimal,
-          name: selectedAnimalData.name,
-          tagNumber: selectedAnimalData.tagNumber,
-          species: selectedAnimalData.animalType,
-          breed: selectedAnimalData.breed,
-          gender: selectedAnimalData.gender || "male" as const,
-          farmId: selectedAnimalData.farmId,
-          farmName: selectedAnimalData.farmName,
-        },
-        eventInfo: {
-          dateOfDeath: dateOfDeath.toISOString(),
-          timeOfDeath: timeOfDeath || undefined,
-          placeOfDeath: mapPlaceOfDeath(placeOfDeath),
-          reportedCause: reportedCause || "unknown",
-          discoveredBy: user?.fullName || "Unknown",
-          discoveredById: user?.id || "unknown",
-          circumstances: circumstances || undefined,
-          witnesses: witnesses.length > 0 ? witnesses : undefined,
-        },
-        // Only include if set
-        ...(vetRequired && { assignedVetId }),
-        ...(vetRequestReason && { vetRequestReason }),
-      };
-
-      let response;
-      if (caseId) {
-        // Update existing draft - use updateEventInfo for event info
-        response = await DeathCaseAPI.updateEventInfo(caseId, draftData);
-      } else {
-        // Create new draft
-        response = await DeathCaseAPI.createForAnimal(selectedAnimal, draftData);
-        setCaseId(response.data.id);
+      let activeCaseId = caseId;
+      if (!activeCaseId) {
+        const res = await DeathCaseAPI.createForAnimal(selectedAnimal);
+        activeCaseId = (res.data as { data: { id: string } }).data.id;
+        setCaseId(activeCaseId);
       }
-
-      toast({
-        title: "Draft saved",
-        description: "Your progress has been saved as a draft.",
-      });
+      toast({ title: "Draft saved", description: "Death case draft has been created." });
     } catch (error) {
-      console.error('Error saving draft:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save draft",
-        variant: "destructive",
-      });
+      console.error("Error saving draft:", error);
+      toast({ title: "Error", description: "Failed to save draft", variant: "destructive" });
     } finally {
       setIsSavingDraft(false);
     }
   };
 
-  // Submit death report (initial submission)
+  // Submit death report — create case then update event section
   const submitDeathReport = async () => {
     if (!selectedAnimalData || !user) return;
-    
+    if (!reportedCause) {
+      toast({ title: "Missing field", description: "Please select a cause of death.", variant: "destructive" });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const reportData = {
-        animalId: selectedAnimal,
-        caseNumber,
-        workflowStatus: "reported" as WorkflowStatus,
-        snapshot: {
-          id: selectedAnimal,
-          name: selectedAnimalData.name,
-          tagNumber: selectedAnimalData.tagNumber,
-          species: selectedAnimalData.animalType,
-          breed: selectedAnimalData.breed,
-          gender: selectedAnimalData.gender || "male" as const,
-          farmId: selectedAnimalData.farmId,
-          farmName: selectedAnimalData.farmName,
-        },
-        eventInfo: {
-          dateOfDeath: dateOfDeath.toISOString(),
-          timeOfDeath: timeOfDeath || undefined,
-          placeOfDeath: mapPlaceOfDeath(placeOfDeath),
-          reportedCause: reportedCause || "unknown",
-          discoveredBy: user.fullName,
-          discoveredById: user.id,
-          circumstances: circumstances || undefined,
-          witnesses: witnesses.length > 0 ? witnesses : undefined,
-        },
-      };
+      let activeCaseId = caseId;
 
-      let response;
-      if (caseId) {
-        // Update existing case to reported status - use updateEventInfo
-        response = await DeathCaseAPI.updateEventInfo(caseId, {
-          ...reportData,
-          workflowStatus: "reported",
-        });
-      } else {
-        // Create new case and mark as reported
-        response = await DeathCaseAPI.createForAnimal(selectedAnimal, reportData);
-        setCaseId(response.data.id);
-        // Submit the report
-        await DeathCaseAPI.submitReport(response.data.id);
+      // Step 1: create the draft case if we don't have one yet
+      if (!activeCaseId) {
+        const createRes = await DeathCaseAPI.createForAnimal(selectedAnimal);
+        activeCaseId = (createRes.data as { data: { id: string } }).data.id;
+        setCaseId(activeCaseId);
       }
 
+      // Step 2: update event section with correct field names
+      await DeathCaseAPI.updateEventInfo(activeCaseId, {
+        dateOfDeath: dateOfDeath.toISOString(),
+        causeOfDeath: reportedCause,
+        placeOfDeath: placeOfDeath || "unknown",
+        causeDetails: circumstances || undefined,
+      });
+
       setWorkflowStatus("reported");
-      
+
       // Move to next step based on role
       if (canRequestVet && availableSteps.includes("request-vet")) {
         setCurrentStep("request-vet");
       } else if (canFillDisposal && availableSteps.includes("disposal")) {
         setCurrentStep("disposal");
-      } else if (canReviewSubmit && availableSteps.includes("review")) {
-        setCurrentStep("review");
+      } else {
+        navigate(`/compliance/death-cases/${activeCaseId}`);
       }
 
-      toast({
-        title: "Death reported",
-        description: `Case ${caseNumber} has been reported successfully.`,
-      });
+      toast({ title: "Death reported", description: `Case ${caseNumber} has been reported.` });
     } catch (error) {
-      console.error('Error submitting death report:', error);
-      toast({
-        title: "Error",
-        description: "Failed to submit death report",
-        variant: "destructive",
-      });
+      console.error("Error submitting death report:", error);
+      toast({ title: "Error", description: "Failed to submit death report", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
@@ -1082,27 +1018,30 @@ export default function NewDeathCase() {
 
   // Request vet confirmation
   const requestVetConfirmation = async () => {
-    if (!caseId || !assignedVetId) return;
-    
+    if (!caseId) return;
+
     setIsSubmitting(true);
     try {
-      await DeathCaseAPI.requestVet(caseId, assignedVetId);
-      setWorkflowStatus("vet_requested");
-      
+      await DeathCaseAPI.requestVet(caseId, vetRequired);
+      setWorkflowStatus(vetRequired ? "vet_requested" : "disposal_pending");
+
       toast({
-        title: "Vet requested",
-        description: "A veterinarian has been requested to confirm the cause of death.",
+        title: vetRequired ? "Vet requested" : "Proceeding without vet",
+        description: vetRequired
+          ? "Case status set to awaiting vet confirmation."
+          : "Moving to disposal documentation.",
       });
-      
-      // Navigate back to death cases list
-      navigate("/compliance/death-cases");
+
+      if (vetRequired) {
+        navigate(`/compliance/death-cases/${caseId}`);
+      } else if (canFillDisposal && availableSteps.includes("disposal")) {
+        setCurrentStep("disposal");
+      } else {
+        navigate(`/compliance/death-cases/${caseId}`);
+      }
     } catch (error) {
-      console.error('Error requesting vet:', error);
-      toast({
-        title: "Error",
-        description: "Failed to request veterinarian confirmation",
-        variant: "destructive",
-      });
+      console.error("Error requesting vet:", error);
+      toast({ title: "Error", description: "Failed to request vet confirmation", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
@@ -1110,55 +1049,37 @@ export default function NewDeathCase() {
 
   // Handle vet confirmation submission
   const submitVetConfirmation = async () => {
-    if (!caseId || !user) return;
-    
+    if (!caseId) return;
+
     setIsSubmitting(true);
     try {
-      const vetData = {
-        confirmedBy: user.fullName,
-        confirmedById: user.id,
-        confirmedAt: new Date().toISOString(),
-        confirmedCause,
-        confirmedCauseDetails,
-        necropsyRequired,
+      // Map frontend state to backend field names
+      await DeathCaseAPI.confirmVet(caseId, {
+        causeOfDeath: confirmedCause || undefined,
+        causeDetails: confirmedCauseDetails || undefined,
         necropsyPerformed,
         necropsyFindings: necropsyPerformed ? necropsyFindings : undefined,
-        additionalNotes: vetNotes,
-      };
+      });
 
-      await DeathCaseAPI.vetConfirm(caseId, vetData);
-      setWorkflowStatus("vet_confirmed");
-      
+      setWorkflowStatus("disposal_pending");
+
       // Upload necropsy files if any
-      if (necropsyFiles.length > 0) {
-        for (const file of necropsyFiles) {
-          const formData = new FormData();
-          formData.append('file', file);
-          formData.append('type', 'necropsy_report');
-          formData.append('section', 'vet');
-          
-          await DeathCaseAPI.addAttachment(caseId, formData);
-        }
+      for (const file of necropsyFiles) {
+        const formData = new FormData();
+        formData.append("file", file);
+        await DeathCaseAPI.addAttachment(caseId, formData);
       }
 
-      toast({
-        title: "Vet confirmation submitted",
-        description: "Veterinary confirmation has been recorded.",
-      });
-      
-      // Move to disposal step
-      if (availableSteps.includes("disposal")) {
+      toast({ title: "Vet confirmation submitted", description: "Veterinary confirmation has been recorded." });
+
+      if (canFillDisposal && availableSteps.includes("disposal")) {
         setCurrentStep("disposal");
       } else {
-        navigate("/compliance/death-cases");
+        navigate(`/compliance/death-cases/${caseId}`);
       }
     } catch (error) {
-      console.error('Error submitting vet confirmation:', error);
-      toast({
-        title: "Error",
-        description: "Failed to submit veterinary confirmation",
-        variant: "destructive",
-      });
+      console.error("Error submitting vet confirmation:", error);
+      toast({ title: "Error", description: "Failed to submit vet confirmation", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
@@ -1166,83 +1087,41 @@ export default function NewDeathCase() {
 
   // Handle disposal submission
   const submitDisposal = async () => {
-    if (!caseId || !user) return;
-    
+    if (!caseId) return;
+    if (!disposalMethod) {
+      toast({ title: "Missing field", description: "Please select a disposal method.", variant: "destructive" });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const disposalData = {
-        method: disposalMethod,
-        date: disposalDate.toISOString(),
-        location: disposalLocation || undefined,
-        handledBy: user.fullName,
-        handledById: user.id,
-        witnessedBy: disposalWitness || undefined,
-      };
+      // Map frontend state to backend field names
+      await DeathCaseAPI.recordDisposal(caseId, {
+        disposalMethod,
+        disposalDate: disposalDate.toISOString(),
+        disposalLocation: disposalLocation || undefined,
+      });
 
-      await DeathCaseAPI.updateDisposalInfo(caseId, disposalData);
-      setWorkflowStatus("disposal_recorded");
-      
-      // Upload disposal certificate if provided
+      setWorkflowStatus("review_pending");
+
       if (disposalCertificate) {
         const formData = new FormData();
-        formData.append('file', disposalCertificate);
-        formData.append('type', 'disposal_certificate');
-        formData.append('section', 'disposal');
-        
+        formData.append("file", disposalCertificate);
         await DeathCaseAPI.addAttachment(caseId, formData);
       }
 
-      toast({
-        title: "Disposal recorded",
-        description: "Disposal information has been saved.",
-      });
-      
-      // Move to review step or submit for review
-      if (availableSteps.includes("review")) {
-        setCurrentStep("review");
-      } else {
-        // Submit for manager review
-        await DeathCaseAPI.submitForReview(caseId);
-        navigate("/compliance/death-cases");
-      }
+      toast({ title: "Disposal recorded", description: "Disposal information saved. Case is now pending review." });
+
+      // Auto-transition to review_pending happens server-side; navigate to detail
+      navigate(`/compliance/death-cases/${caseId}`);
     } catch (error) {
-      console.error('Error submitting disposal:', error);
-      toast({
-        title: "Error",
-        description: "Failed to submit disposal information",
-        variant: "destructive",
-      });
+      console.error("Error submitting disposal:", error);
+      toast({ title: "Error", description: "Failed to record disposal", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Handle final submission for review
-  const submitForReview = async () => {
-    if (!caseId) return;
-    
-    setIsSubmitting(true);
-    try {
-      await DeathCaseAPI.submitForReview(caseId);
-      setWorkflowStatus("review_pending");
-      
-      toast({
-        title: "Case submitted for review",
-        description: `Case ${caseNumber} has been submitted for manager review.`,
-      });
-      
-      navigate("/compliance/death-cases");
-    } catch (error) {
-      console.error('Error submitting for review:', error);
-      toast({
-        title: "Error",
-        description: "Failed to submit case for review",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const stepsConfig = [
     { id: "report", label: "Report Death", icon: FileCheck },
@@ -1412,13 +1291,13 @@ export default function NewDeathCase() {
                               
                               return (
                                 <div 
-                                  key={animal._id}
+                                  key={animal.id}
                                   className={cn(
                                     "p-4 flex items-center justify-between transition-colors",
                                     isDisabled ? "opacity-50 cursor-not-allowed bg-muted/20" : "hover:bg-muted/50 cursor-pointer",
-                                    selectedAnimal === animal._id && !isDisabled && "bg-primary/5 border-primary/20"
+                                    selectedAnimal === animal.id && !isDisabled && "bg-primary/5 border-primary/20"
                                   )}
-                                  onClick={() => !isDisabled && (setSelectedAnimal(animal._id), setSelectedAnimalData(animal))}
+                                  onClick={() => !isDisabled && (setSelectedAnimal(animal.id), setSelectedAnimalData(animal))}
                                 >
                                   <div className="flex-1">
                                     <div className="flex items-center gap-2">
@@ -1509,12 +1388,22 @@ export default function NewDeathCase() {
                           <Input type="time" value={timeOfDeath} onChange={(e) => setTimeOfDeath(e.target.value)} />
                         </div>
                         <div className="space-y-2">
-                          <Label>Location at time of death</Label>
-                          <Input
-                            value={placeOfDeath}
-                            onChange={(e) => setPlaceOfDeath(e.target.value)}
-                            placeholder="Enter location (e.g. Main Barn, Pasture, Clinic...)"
-                          />
+                          <Label>Place of Death *</Label>
+                          <Select value={placeOfDeath} onValueChange={setPlaceOfDeath}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select location" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="barn">Barn</SelectItem>
+                              <SelectItem value="field">Field / Pasture</SelectItem>
+                              <SelectItem value="clinic">Veterinary Clinic</SelectItem>
+                              <SelectItem value="hospital">Animal Hospital</SelectItem>
+                              <SelectItem value="transport">During Transport</SelectItem>
+                              <SelectItem value="quarantine">Quarantine Area</SelectItem>
+                              <SelectItem value="holding_pen">Holding Pen</SelectItem>
+                              <SelectItem value="unknown">Unknown</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div className="space-y-2">
                           <Label>Reported Cause *</Label>
@@ -1525,10 +1414,13 @@ export default function NewDeathCase() {
                             <SelectContent>
                               <SelectItem value="natural">Natural Causes</SelectItem>
                               <SelectItem value="accident">Accident</SelectItem>
-                              <SelectItem value="disease">Disease</SelectItem>
+                              <SelectItem value="infectious">Infectious Disease</SelectItem>
+                              <SelectItem value="non_infectious">Non-Infectious Disease</SelectItem>
+                              <SelectItem value="medical">Medical</SelectItem>
                               <SelectItem value="predation">Predation</SelectItem>
+                              <SelectItem value="poisoning">Poisoning</SelectItem>
+                              <SelectItem value="euthanasia">Euthanasia</SelectItem>
                               <SelectItem value="unknown">Unknown</SelectItem>
-                              <SelectItem value="other">Other</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -2119,7 +2011,7 @@ export default function NewDeathCase() {
 
             {currentStep === "review" && canReviewSubmit && (
               <Button 
-                onClick={submitForReview}
+                onClick={() => caseId && navigate(`/compliance/death-cases/${caseId}`)}
                 disabled={isSubmitting}
                 className="bg-primary hover:bg-primary/90"
               >

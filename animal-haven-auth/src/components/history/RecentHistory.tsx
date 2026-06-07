@@ -1,11 +1,11 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HistoryItem } from "./HistoryItem";
 import { formatHistoryEvent } from "@/utils/history-formatters";
 import { AnimalHistoryEvent } from "@/types/animal-history";
-import { Activity, ChevronRight } from "lucide-react";
+import { ClipboardList, ChevronRight } from "lucide-react";
+import { EmptyState } from "@/components/EmptyState";
 
 interface RecentHistoryProps {
   events: AnimalHistoryEvent[];
@@ -15,6 +15,12 @@ interface RecentHistoryProps {
   onViewAll?: () => void;
   title?: string;
   emptyMessage?: string;
+  emptyDescription?: string;
+  emptyAction?: {
+    label: string;
+    onClick?: () => void;
+    to?: string;
+  };
 }
 
 export function RecentHistory({
@@ -24,7 +30,9 @@ export function RecentHistory({
   showViewAll = true,
   onViewAll,
   title = "Recent Activity",
-  emptyMessage = "No activity recorded yet"
+  emptyMessage = "No updates logged yet",
+  emptyDescription = "Log health checks, vaccinations, weight measurements, and breeding events here.",
+  emptyAction,
 }: RecentHistoryProps) {
   const formattedEvents = events
     .map(formatHistoryEvent)
@@ -50,11 +58,14 @@ export function RecentHistory({
     return (
       <Card>
         <CardContent className="pt-6">
-          <h3 className="font-medium mb-4">{title}</h3>
-          <div className="text-center py-8 text-muted-foreground">
-            <Activity className="h-10 w-10 mx-auto mb-3 opacity-50" />
-            <p>{emptyMessage}</p>
-          </div>
+          <h3 className="font-medium mb-2">{title}</h3>
+          <EmptyState
+            icon={ClipboardList}
+            title={emptyMessage}
+            description={emptyDescription}
+            action={emptyAction}
+            className="py-8"
+          />
         </CardContent>
       </Card>
     );

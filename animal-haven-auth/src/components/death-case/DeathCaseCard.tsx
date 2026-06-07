@@ -26,7 +26,7 @@ export function DeathCaseCard({
     : null;
 
   const handleClick = () => {
-    navigate(`/death-cases/${deathCase.id}`);
+    navigate(`/compliance/death-cases/${deathCase.id}`);
   };
 
   return (
