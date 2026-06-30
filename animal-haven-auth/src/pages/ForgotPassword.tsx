@@ -5,13 +5,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, ArrowLeft } from "lucide-react";
+import { Mail, ArrowLeft, Loader2 } from "lucide-react";
+import { requestPasswordReset } from "@/api/passwordReset";
+import { getErrorMessage } from "@/lib/errorUtils";
 
 const ForgotPassword = () => {
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  // Returned only outside production (no email provider configured) so the flow is testable.
+  const [devLink, setDevLink] = useState<string | null>(null);
 
   const validateForm = () => {
     if (!email.trim()) {
@@ -26,24 +31,27 @@ const ForgotPassword = () => {
     return true;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) return;
 
-    if (validateForm()) {
-      // Simulate sending password reset email
-      const existingUsers = JSON.parse(localStorage.getItem("users") || "[]");
-      const userExists = existingUsers.some((u: any) => u.email === email);
-
-      if (!userExists) {
-        setError("No account found with this email address");
-        return;
+    setLoading(true);
+    try {
+      const res = await requestPasswordReset(email.trim());
+      if (res.devToken) {
+        setDevLink(
+          `/reset-password?email=${encodeURIComponent(email.trim())}&token=${res.devToken}`,
+        );
       }
-
       setSubmitted(true);
       toast({
-        title: "Reset link sent!",
-        description: "Check your email for password reset instructions",
+        title: "Check your email",
+        description: "If an account exists, reset instructions have been sent.",
       });
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,18 +65,35 @@ const ForgotPassword = () => {
             </div>
             <CardTitle className="text-2xl font-bold text-primary">Check Your Email</CardTitle>
             <CardDescription className="text-base">
-              We've sent password reset instructions to
+              If an account exists for
               <div className="font-medium text-foreground mt-1">{email}</div>
+              we've sent password reset instructions.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {devLink && (
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm">
+                <p className="font-medium text-amber-700 dark:text-amber-400">
+                  Development mode
+                </p>
+                <p className="mt-1 text-muted-foreground">
+                  No email provider is configured, so use this link to continue:
+                </p>
+                <Button asChild variant="link" className="mt-1 h-auto p-0 text-amber-700 dark:text-amber-400">
+                  <Link to={devLink}>Open reset link</Link>
+                </Button>
+              </div>
+            )}
             <p className="text-sm text-muted-foreground text-center">
               Didn't receive the email? Check your spam folder or try again.
             </p>
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => setSubmitted(false)}
+              onClick={() => {
+                setSubmitted(false);
+                setDevLink(null);
+              }}
             >
               Try Another Email
             </Button>
@@ -111,8 +136,15 @@ const ForgotPassword = () => {
               {error && <p className="text-sm text-destructive">{error}</p>}
             </div>
 
-            <Button type="submit" className="w-full" size="lg">
-              Send Reset Instructions
+            <Button type="submit" className="w-full" size="lg" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending…
+                </>
+              ) : (
+                "Send Reset Instructions"
+              )}
             </Button>
 
             <Button asChild variant="ghost" className="w-full">

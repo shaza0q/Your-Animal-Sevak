@@ -4653,3 +4653,6 @@
 {"level":"info","message":"Checking access for user 6958074621f294db2214fb9c to farm 695e912a8315634dbd37013a","service":"animal-management","timestamp":"2026-02-08T15:50:11.439Z"}
 {"level":"info","message":"Checking access for user cmpx1pmqe0001fn2g5bbogeu3 to farm demo-farm-seed","service":"animal-management","timestamp":"2026-06-03T16:59:38.964Z"}
 {"level":"info","message":"Checking access for user cmpx1pmqe0001fn2g5bbogeu3 to farm demo-farm-seed","service":"animal-management","timestamp":"2026-06-03T16:59:39.087Z"}
+{"level":"info","message":"Checking access for user cmr02dcv3009f5w7kfakmz58d to farm demo-farm-seed","service":"animal-management","timestamp":"2026-06-30T03:55:17.667Z"}
+{"level":"info","message":"Checking access for user cmr02dcv3009f5w7kfakmz58d to farm demo-farm-seed","service":"animal-management","timestamp":"2026-06-30T03:56:15.314Z"}
+{"level":"info","message":"Checking access for user cmr02dcv3009f5w7kfakmz58d to farm demo-farm-seed","service":"animal-management","timestamp":"2026-06-30T03:56:16.056Z"}

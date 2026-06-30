@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Beef, Bird, Rabbit, PawPrint, Skull, History, AlertCircle } from "lucide-react";
-import { getUserData } from "@/api/getUserData";
+import { Beef, Bird, Rabbit, PawPrint, Skull, History } from "lucide-react";
+import { useBreadcrumbs } from "@/components/layout/breadcrumb-context";
 import { getFarmData } from "@/api/getFarmData";
 import { FarmSummaryDto } from "@/interface/farm.interface";
 import { getAnimalOverview } from "@/api/getAnimalOverview";
@@ -45,22 +45,10 @@ const AnimalsOverview = () => {
   const isSoldMode = state === "sold";
   const isAuditView = isDeceasedMode || isSoldMode;
   
-  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [farm, setFarm] = useState<FarmSummaryDto | null>(null);
   const [animalOverview, setAnimalOverview] = useState<AnimalOverviewResponse | null>(null);
   const [deceasedCount, setDeceasedCount] = useState<number>(0);
-
-  const fetchUser = async () => {
-    try {
-      const user = await getUserData();
-      setUser(user);
-      return user;
-    } catch (err) {
-      console.error("Auth failed", err);
-      throw err;
-    }
-  };
 
   const fetchFarm = async (farmId: string) => {
     try {
@@ -101,30 +89,19 @@ const AnimalsOverview = () => {
       try {
         setLoading(true);
 
-        console.log('----------starting fetch with state:', state);
-        const userData = await fetchUser();
-        console.log('----------fetched user', userData);
-        const farmData = await fetchFarm(farmId);
-        console.log('----------fetched farm', farmData);
-        
+        await fetchFarm(farmId);
+
         if (isAuditView) {
           // Fetch audit data
-          const overData = await fetchAnimalOverview(farmId, state);
-          console.log(`----------fetched overview ${state}`, overData);
+          await fetchAnimalOverview(farmId, state);
         } else {
           // Fetch active data + deceased count
-          const overData = await fetchAnimalOverview(farmId, "active");
-          console.log('----------fetched overview active', overData);
-          
+          await fetchAnimalOverview(farmId, "active");
           const count = await fetchDeceasedCount(farmId);
           setDeceasedCount(count);
-          console.log('----------fetched deceased count:', count);
         }
-
       } catch (error) {
         console.error("Initialization error:", error);
-        setUser(null);
-        navigate("/signin", { replace: true });
       } finally {
         setLoading(false);
       }
@@ -135,52 +112,53 @@ const AnimalsOverview = () => {
     }
   }, [farmId, navigate, state, isAuditView]);
 
-  if (!user) return null;
+  useBreadcrumbs([
+    { label: "Dashboard", to: "/dashboard" },
+    { label: farm?.name ?? "Farm", to: `/farmInsights/${farmId}` },
+    {
+      label: isAuditView
+        ? state === "deceased"
+          ? "Deceased"
+          : "Sold"
+        : "Animals",
+    },
+  ]);
 
   // ================================
   // Loading State
   // ================================
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <header className="border-b bg-card shadow-sm">
-          <div className="container mx-auto px-4 py-4">
-            <Skeleton className="h-6 w-64" />
-          </div>
-        </header>
-        <main className="container mx-auto px-4 py-8">
-          <div className="mb-6">
-            <Skeleton className="h-10 w-64 mb-4" />
-          </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {[1, 2, 3, 4].map((i) => (
-              <Card key={i}>
-                <CardContent className="p-6">
-                  <Skeleton className="h-10 w-10 rounded-full mb-4" />
-                  <Skeleton className="h-6 w-24 mb-2" />
-                  <Skeleton className="h-4 w-32" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </main>
+      <div>
+        <div className="mb-6">
+          <Skeleton className="h-10 w-64 mb-4" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <Skeleton className="h-10 w-10 rounded-full mb-4" />
+                <Skeleton className="h-6 w-24 mb-2" />
+                <Skeleton className="h-4 w-32" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
 
   if (!farm) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="w-96">
-          <CardHeader>
-            <CardTitle>Farm Not Found</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-4">The requested farm could not be found.</p>
-            <Button onClick={() => navigate("/directory")}>Back to Directory</Button>
-          </CardContent>
-        </Card>
-      </div>
+      <Card className="mx-auto w-96">
+        <CardHeader>
+          <CardTitle>Farm Not Found</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground mb-4">The requested farm could not be found.</p>
+          <Button onClick={() => navigate("/directory")}>Back to Directory</Button>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -206,19 +184,6 @@ const AnimalsOverview = () => {
   const getCategoryIcon = (type: string): React.ReactNode => {
     const typeKey = normalizeCategoryType(type) as AnimalType;
     return animalIcons[typeKey] || animalIcons.default;
-  };
-
-  // ================================
-  // Header Navigation
-  // ================================
-  const getBackNavigation = () => {
-    // if (isAuditView) {
-    //   return `/farms/${farmId}/animals`; // Back to active overview
-    // } else {
-    //   return `/farmInsights/${farmId}`; // Back to farm directory
-    // }
-    return `/farmInsights/${farmId}`;
-    
   };
 
   const getModeSwitchButton = () => {
@@ -253,59 +218,46 @@ const AnimalsOverview = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header - Mode-specific styling */}
-      <header className={`border-b bg-card shadow-sm ${isAuditView ? 'bg-muted/20' : ''}`}>
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate(getBackNavigation())}
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">
-                  {isAuditView ? `${state === 'deceased' ? 'Deceased' : 'Sold'} Animals` : farm.name}
-                </h1>
-                <div className="text-sm text-muted-foreground">
-                  {isAuditView ? (
-                    <>
-                      <span>Audit and review for {farm.name}</span>
-                      {totalAuditAnimals > 0 && (
-                        <span> • {totalAuditAnimals} total records</span>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <span>{totalCurrentAnimals} active animals</span>
-                      {totalUnassigned > 0 && (
-                        <span className="text-destructive"> • {totalUnassigned} unassigned</span>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-            
-            {modeSwitchButton && (
-              <Button
-                variant={modeSwitchButton.variant}
-                size="sm"
-                onClick={modeSwitchButton.onClick}
-                className="gap-2"
-              >
-                {modeSwitchButton.icon}
-                {modeSwitchButton.label}
-              </Button>
+    <div className="space-y-8">
+      {/* Page heading + mode switch */}
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">
+            {isAuditView ? `${state === 'deceased' ? 'Deceased' : 'Sold'} Animals` : farm.name}
+          </h1>
+          <div className="text-sm text-muted-foreground">
+            {isAuditView ? (
+              <>
+                <span>Audit and review for {farm.name}</span>
+                {totalAuditAnimals > 0 && (
+                  <span> • {totalAuditAnimals} total records</span>
+                )}
+              </>
+            ) : (
+              <>
+                <span>{totalCurrentAnimals} active animals</span>
+                {totalUnassigned > 0 && (
+                  <span className="text-destructive"> • {totalUnassigned} unassigned</span>
+                )}
+              </>
             )}
           </div>
         </div>
-      </header>
 
-      <main className="container mx-auto px-4 py-8">
+        {modeSwitchButton && (
+          <Button
+            variant={modeSwitchButton.variant}
+            size="sm"
+            onClick={modeSwitchButton.onClick}
+            className="gap-2"
+          >
+            {modeSwitchButton.icon}
+            {modeSwitchButton.label}
+          </Button>
+        )}
+      </div>
+
+      <div>
         {/* Mode-specific title and description */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-foreground mb-2 flex items-center gap-2">
@@ -474,7 +426,7 @@ const AnimalsOverview = () => {
             )}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };

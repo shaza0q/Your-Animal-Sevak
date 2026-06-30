@@ -17,6 +17,7 @@ export interface AnimalDetail {
   gender: string;
   generation?: number;
   weight?: number | null;
+  photoUrl?: string | null;
   status: string;
   age?: number | null;
   dateOfBirth?: string | null;

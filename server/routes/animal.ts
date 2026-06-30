@@ -10,6 +10,7 @@ import {
   listAnimalsByType,
   getAnimalAbstract,
   sellAnimalController,
+  uploadAnimalPhotoController,
 } from '../controllers/animalController';
 import { validateBody } from '../lib/validate';
 import { AddAnimalSchema, RecordAnimalEventSchema, SellAnimalSchema } from '../schemas/animal.schemas';
@@ -34,6 +35,15 @@ router.post(
   upload.single('mediaFile'),
   validateBody(RecordAnimalEventSchema),
   updateAnimalData,
+);
+
+// Upload / change an animal's profile photo
+router.post(
+  '/:animalId/photo',
+  protect,
+  requireAnimalFarmAccess,
+  upload.single('photo'),
+  uploadAnimalPhotoController,
 );
 
 // Sell an animal — atomic: Sale record + AnimalUpdate event + status change

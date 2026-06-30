@@ -1,8 +1,15 @@
+import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Camera, Loader2 } from "lucide-react";
 import { type AnimalDetail } from "@/interfaces/animal-detail.interface";
+import { AnimalAvatar } from "@/components/AnimalAvatar";
+import { uploadAnimalPhoto } from "@/api/uploadAnimalPhoto";
+import { useInvalidateAnimalDetail } from "@/hooks/useAnimalDetail";
+import { toast } from "@/components/ui/sonner";
+import { getErrorMessage } from "@/lib/errorUtils";
 
 interface AnimalHeaderProps {
   animal: AnimalDetail;
@@ -26,10 +33,34 @@ const statusConfig: Record<
 
 const AnimalHeader = ({ animal, farmId }: AnimalHeaderProps) => {
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const invalidateDetail = useInvalidateAnimalDetail();
+
   const cfg = statusConfig[animal.status] ?? {
     label: animal.status,
     className: "bg-muted text-muted-foreground",
   };
+
+  const { mutate: changePhoto, isPending } = useMutation({
+    mutationFn: (file: File) => uploadAnimalPhoto(animal.id, file),
+    onSuccess: () => {
+      invalidateDetail(farmId, animal.id);
+      toast("Photo updated", { description: `${animal.name}'s photo has been changed.` });
+    },
+    onError: (err) => {
+      toast("Couldn't update photo", { description: getErrorMessage(err) });
+    },
+  });
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) changePhoto(file);
+    // Allow re-selecting the same file later
+    e.target.value = "";
+  };
+
+  // Photos can only be set while the animal is an active record
+  const canEditPhoto = animal.status !== "Deceased";
 
   return (
     <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm">
@@ -45,6 +76,40 @@ const AnimalHeader = ({ animal, farmId }: AnimalHeaderProps) => {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
+
+          {/* Profile photo with change-photo control */}
+          <div className="relative shrink-0">
+            <AnimalAvatar
+              photoUrl={animal.photoUrl}
+              name={animal.name}
+              animalType={animal.animalType}
+              className="h-16 w-16 border-2 border-border"
+              iconClassName="h-7 w-7"
+            />
+            {canEditPhoto && (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isPending}
+                aria-label="Change photo"
+                className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-card bg-primary text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-70"
+              >
+                {isPending ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Camera className="h-3.5 w-3.5" />
+                )}
+              </button>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFile}
+            />
+          </div>
+
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl font-semibold text-foreground tracking-tight">
               {animal.name}

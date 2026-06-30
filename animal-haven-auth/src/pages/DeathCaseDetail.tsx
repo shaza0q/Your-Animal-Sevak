@@ -35,6 +35,7 @@ import {
   AttachmentGallery,
 } from "@/components/death-case";
 import { CaseStatusBadge } from "@/components/death-case/CaseStatusBadge";
+import { useBreadcrumbs } from "@/components/layout/breadcrumb-context";
 import { UserRole, getPermissions, getStepFromStatus } from "@/types/deathCase";
 import { format } from "date-fns";
 import {
@@ -107,6 +108,12 @@ export default function DeathCaseDetail() {
   }, [navigate]);
 
   const { data: deathCase, isLoading, isError } = useDeathCase(id);
+
+  useBreadcrumbs([
+    { label: "Dashboard", to: "/dashboard" },
+    { label: "Death Cases", to: "/compliance/death-cases" },
+    { label: deathCase ? `Case ${deathCase.caseNumber}` : "Case" },
+  ]);
 
   const updateEvent = useUpdateDeathCaseEvent();
   const requestVetMutation = useRequestVet();
@@ -323,15 +330,9 @@ export default function DeathCaseDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-        <div className="container max-w-6xl mx-auto px-4 py-4">
-          <CaseHeader deathCase={deathCase} />
-        </div>
-      </header>
+    <div className="max-w-6xl mx-auto space-y-6">
+      <CaseHeader deathCase={deathCase} />
 
-      <main className="container max-w-6xl mx-auto px-4 py-6 space-y-6">
         {/* Workflow stepper */}
         <Card>
           <CardContent className="pt-6">
@@ -611,7 +612,6 @@ export default function DeathCaseDetail() {
             </Card>
           </TabsContent>
         </Tabs>
-      </main>
 
       {/* ── Dialogs ─────────────────────────────────────────────────────────── */}
 

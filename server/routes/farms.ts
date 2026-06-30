@@ -7,7 +7,7 @@ import { validateBody } from '../lib/validate';
 import { AssignFarmUserSchema } from '../schemas/farm.schemas';
 
 /* eslint-disable @typescript-eslint/no-var-requires */
-const { getAnimalOverview, listAnimalsByType, getAnimalDetailController, getDashboardStatsController } = require('../controllers/animalController');
+const { getAnimalOverview, listAnimalsByType, getAnimalDetailController, getDashboardStatsController, getFarmTasksController, getRecentActivityController } = require('../controllers/animalController');
 /* eslint-enable @typescript-eslint/no-var-requires */
 
 const router = Router();
@@ -15,6 +15,10 @@ const router = Router();
 // Static routes must come BEFORE /:farmId to prevent Express treating the
 // literal path segment as a param value.
 router.get('/dashboard', protect, getDashboardStatsController);
+
+router.get('/tasks', protect, getFarmTasksController);
+
+router.get('/activity', protect, getRecentActivityController);
 
 router.get('/:farmId/users', protect, requireFarmAccess, getFarmUsers);
 

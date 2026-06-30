@@ -170,6 +170,8 @@ model User {
   password  String
   role      UserRole @default(caretaker)
   isActive  Boolean  @default(true)
+  resetTokenHash   String?
+  resetTokenExpiry DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -242,6 +244,7 @@ model Animal {
   dateOfBirth     DateTime?
   acquisitionDate DateTime?
   status          AnimalStatus @default(Active)
+  photoUrl        String?
   isDeleted       Boolean      @default(false)
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt

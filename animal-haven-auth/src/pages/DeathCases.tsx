@@ -128,48 +128,39 @@ export default function DeathCases() {
   }), [allCases, pendingStatuses]);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-        <div className="container max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <div>
-                <h1 className="text-xl font-bold">Death Cases</h1>
-                <p className="text-sm text-muted-foreground">Legal-compliant mortality workflow</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {farms.length > 1 && (
-                <Select value={farmId} onValueChange={handleFarmChange}>
-                  <SelectTrigger className="w-[160px]">
-                    <SelectValue placeholder="Select farm" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {farms.map((f) => (
-                      <SelectItem key={f.id} value={f.id}>
-                        {f.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              <Button
-                onClick={() => navigate("/compliance/death-cases/new")}
-                disabled={!farmId}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                New Case
-              </Button>
-            </div>
-          </div>
+    <div className="max-w-6xl mx-auto space-y-6">
+      {/* Page heading + actions */}
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold">Death Cases</h1>
+          <p className="text-sm text-muted-foreground">Legal-compliant mortality workflow</p>
         </div>
-      </header>
+        <div className="flex items-center gap-2">
+          {farms.length > 1 && (
+            <Select value={farmId} onValueChange={handleFarmChange}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Select farm" />
+              </SelectTrigger>
+              <SelectContent>
+                {farms.map((f) => (
+                  <SelectItem key={f.id} value={f.id}>
+                    {f.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <Button
+            onClick={() => navigate("/compliance/death-cases/new")}
+            disabled={!farmId}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            New Case
+          </Button>
+        </div>
+      </div>
 
-      <main className="container max-w-6xl mx-auto px-4 py-6 space-y-6">
+      <div className="space-y-6">
         {/* Role indicator */}
         {user && (
           <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
@@ -366,7 +357,7 @@ export default function DeathCases() {
             </Tabs>
           </>
         )}
-      </main>
+      </div>
     </div>
   );
 }

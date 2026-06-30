@@ -3,7 +3,7 @@ import { AnimalType, AnimalStatus, Gender, UpdateType, HealthStatus } from '../g
 import { paginated, paginationMeta, PaginatedResponse } from '../lib/pagination';
 
 interface SearchAnimalArgs {
-  farmId: string;
+  farmIds: string[];
   q?: string;
   animalType?: string;
   breed?: string;
@@ -57,7 +57,7 @@ function normalizeGender(gender: string): string {
 }
 
 export async function searchAnimal({
-  farmId,
+  farmIds,
   q,
   animalType,
   breed,
@@ -65,7 +65,7 @@ export async function searchAnimal({
   excludeAnimalIds = [],
 }: SearchAnimalArgs) {
   const where: any = {
-    farmId,
+    farmId: { in: farmIds },
     isDeleted: false,
   };
 
@@ -96,6 +96,7 @@ export async function searchAnimal({
   return prisma.animal.findMany({
     where,
     take: 20,
+    orderBy: { tagNumber: 'asc' },
     select: {
       id: true,
       tagNumber: true,
@@ -107,6 +108,8 @@ export async function searchAnimal({
       status: true,
       dateOfBirth: true,
       weight: true,
+      photoUrl: true,
+      farm: { select: { name: true } },
     },
   });
 }
@@ -194,6 +197,7 @@ export async function getAnimalsByType({
       breed: animal.breed,
       gender: animal.gender,
       status: animal.status,
+      photoUrl: animal.photoUrl,
       dateOfBirth: animal.dateOfBirth?.toISOString() ?? null,
       weight: animal.weight,
       isAssigned: animal.assignments.length > 0,
@@ -291,6 +295,7 @@ export async function getAnimalDetail({
     breed: animal.breed,
     gender: animal.gender,
     generation: animal.generation,
+    photoUrl: animal.photoUrl,
     age,
     weight: animal.weight,
     dateOfBirth: animal.dateOfBirth?.toISOString() ?? null,

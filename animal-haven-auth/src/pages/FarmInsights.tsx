@@ -12,6 +12,7 @@ import {
   Users,
 } from "lucide-react";
 import FarmStaffSection from "@/components/FarmStaffSection";
+import { useBreadcrumbs } from "@/components/layout/breadcrumb-context";
 import { getFarmData } from "@/api/getFarmData";
 import { FarmSummaryDto } from "@/interface/farm.interface";
 
@@ -21,6 +22,11 @@ const FarmInsights = () => {
   const [farmData, setFarmData] = useState<FarmSummaryDto | null>(null);
   const [loadingFarm, setLoadingFarm] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useBreadcrumbs([
+    { label: "Dashboard", to: "/dashboard" },
+    { label: farmData?.name ?? "Farm Insights" },
+  ]);
 
   useEffect(() => {
     if (!farmId) return;
@@ -66,28 +72,16 @@ const FarmInsights = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Farm Insights</h1>
-                <p className="text-sm text-muted-foreground">
-                  {farmData.name}
-                  {farmData.location ? ` · ${farmData.location}` : ""}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="space-y-6">
+      {/* Page heading */}
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Farm Insights</h1>
+        <p className="text-sm text-muted-foreground">
+          {farmData.name}
+          {farmData.location ? ` · ${farmData.location}` : ""}
+        </p>
+      </div>
 
-      <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8 space-y-6">
         {/* Farm Overview */}
         <Card className="border-2">
           <CardHeader>
@@ -186,7 +180,6 @@ const FarmInsights = () => {
             </Button>
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 };

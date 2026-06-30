@@ -270,41 +270,26 @@ const DeceasedAnimals = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border/60 bg-card/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate("/directory")}
-                className="hover:bg-muted/60"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Deceased Animals</h1>
-                <p className="text-sm text-muted-foreground">
-                  Historical records for audit and compliance review
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExport}
-              className="gap-2"
-            >
-              <Download className="h-4 w-4" />
-              Export
-            </Button>
-          </div>
+    <div className="space-y-6">
+      {/* Page heading + export */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Deceased Animals</h1>
+          <p className="text-sm text-muted-foreground">
+            Historical records for audit and compliance review
+          </p>
         </div>
-      </header>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExport}
+          className="gap-2"
+        >
+          <Download className="h-4 w-4" />
+          Export
+        </Button>
+      </div>
 
-      <main className="container mx-auto px-4 py-6 space-y-6">
         {/* Key Metrics Bar - Refined copy */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Card className="border-border/50">
@@ -789,7 +774,6 @@ const DeceasedAnimals = () => {
             )}
           </CardContent>
         </Card>
-      </main>
 
       {/* Detail Drawer */}
       <DeceasedAnimalDetailDrawer

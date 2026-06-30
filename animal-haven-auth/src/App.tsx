@@ -5,11 +5,17 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
+import { AppLayout } from "@/components/layout/AppLayout";
 import Index from "./pages/Index";
 import SignUp from "./pages/SignUp";
 import SignIn from "./pages/SignIn";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
+import Tasks from "./pages/Tasks";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import AddAnimal from "./pages/AddAnimal";
 import AddFarm from "./pages/AddFarm";
@@ -35,25 +41,36 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Public routes — no app shell */}
             <Route path="/" element={<Index />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/addFarm" element={<AddFarm/>} />
-            <Route path="/addAnimal" element={<AddAnimal/>} />
-            <Route path="/farmInsights/:id" element={<FarmInsights/>} />
-            <Route path="/animalUpdate" element={<AnimalUpdate/>} />
-            <Route path="/directory" element={<Directory />} />
-            <Route path="/farms/:farmId/animals" element={<AnimalsOverview />} />
-            <Route path="/farms/:farmId/animals/type/:animalType" element={<AnimalsByCategory />} />
-            <Route path="/farms/:farmId/animals/:animalId" element={<AnimalDetail />} />
-            <Route path="/farms/:farmId/animals/deceased" element={<DeceasedAnimals />} />
-            <Route path="/farms/:farmId/animals/:animalId/history" element={<AnimalHistoryPage />} />
-            <Route path="/compliance/death-cases" element={<DeathCasesDashboard/>}/>
-            <Route path="/compliance/death-cases/new" element={<NewDeathCase />} />
-            <Route path="/compliance/death-cases/new/:animalId" element={<NewDeathCase />} />
-            <Route path="/compliance/death-cases/:id" element={<DeathCaseDetail />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+
+            {/* Authenticated routes — auth gate + persistent app shell */}
+            <Route element={<ProtectedRoute />}>
+              <Route element={<AppLayout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/tasks" element={<Tasks />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/addFarm" element={<AddFarm/>} />
+                <Route path="/addAnimal" element={<AddAnimal/>} />
+                <Route path="/farmInsights/:id" element={<FarmInsights/>} />
+                <Route path="/animalUpdate" element={<AnimalUpdate/>} />
+                <Route path="/directory" element={<Directory />} />
+                <Route path="/farms/:farmId/animals" element={<AnimalsOverview />} />
+                <Route path="/farms/:farmId/animals/type/:animalType" element={<AnimalsByCategory />} />
+                <Route path="/farms/:farmId/animals/:animalId" element={<AnimalDetail />} />
+                <Route path="/farms/:farmId/animals/deceased" element={<DeceasedAnimals />} />
+                <Route path="/farms/:farmId/animals/:animalId/history" element={<AnimalHistoryPage />} />
+                <Route path="/compliance/death-cases" element={<DeathCasesDashboard/>}/>
+                <Route path="/compliance/death-cases/new" element={<NewDeathCase />} />
+                <Route path="/compliance/death-cases/new/:animalId" element={<NewDeathCase />} />
+                <Route path="/compliance/death-cases/:id" element={<DeathCaseDetail />} />
+              </Route>
+            </Route>
 
             <Route path="*" element={<NotFound />} />
           </Routes>

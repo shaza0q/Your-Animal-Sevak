@@ -9,7 +9,18 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
     return;
   }
 
-  const user = await prisma.user.findUnique({ where: { id } });
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      mobile: true,
+      role: true,
+      isActive: true,
+      createdAt: true,
+    },
+  });
   res.status(201).json(user);
 };
 

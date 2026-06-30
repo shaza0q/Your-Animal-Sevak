@@ -15,6 +15,7 @@ import { HistoryItem } from "./HistoryItem";
 import { formatHistoryEvent } from "@/utils/history-formatters";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { EmptyState } from "@/components/EmptyState";
+import { useBreadcrumbs } from "@/components/layout/breadcrumb-context";
 import { useAnimalHistory } from "@/hooks/useAnimalHistory";
 
 const DEFAULT_LIMIT = 15;
@@ -37,53 +38,48 @@ export default function AnimalHistoryPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  useBreadcrumbs([
+    { label: "Dashboard", to: "/dashboard" },
+    { label: "Animals", to: `/farms/${farmId}/animals` },
+    { label: "Animal", to: `/farms/${farmId}/animals/${animalId}` },
+    { label: "History" },
+  ]);
+
   if (!animalId) {
     return <div className="p-8 text-center text-muted-foreground">Animal ID is required.</div>;
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="-ml-2 shrink-0"
-              onClick={() => navigate(`/farms/${farmId}/animals/${animalId}`)}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div className="flex items-center gap-2">
-              <History className="h-5 w-5 text-muted-foreground" />
-              <span className="font-semibold">Animal History</span>
-              {pagination && pagination.total > 0 && (
-                <span className="text-sm text-muted-foreground font-normal">
-                  ({pagination.total} events)
-                </span>
-              )}
-              {isFetching && !isLoading && (
-                <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
-              )}
-            </div>
-          </div>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            disabled={isFetching}
-            className="gap-2 shrink-0"
-          >
-            <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Page heading + refresh */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <History className="h-5 w-5 text-muted-foreground" />
+          <span className="font-semibold">Animal History</span>
+          {pagination && pagination.total > 0 && (
+            <span className="text-sm text-muted-foreground font-normal">
+              ({pagination.total} events)
+            </span>
+          )}
+          {isFetching && !isLoading && (
+            <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+          )}
         </div>
-      </header>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => refetch()}
+          disabled={isFetching}
+          className="gap-2 shrink-0"
+        >
+          <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+          Refresh
+        </Button>
+      </div>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <div>
         <Card>
           <CardContent className="p-6 space-y-4">
             {/* Loading */}
@@ -156,7 +152,7 @@ export default function AnimalHistoryPage() {
             )}
           </CardContent>
         </Card>
-      </main>
+      </div>
     </div>
   );
 }

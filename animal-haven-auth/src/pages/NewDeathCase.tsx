@@ -728,6 +728,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { fetchUser } from "@/utils/fetchUser";
+import { useBreadcrumbs } from "@/components/layout/breadcrumb-context";
 import { User as UserType } from "@/interface";
 import { UserRole, WorkflowStatus } from "@/types/deathCase";
 import { fetchAnimalAbstractData } from "@/utils/fetchAnimalAbstractData";
@@ -1165,36 +1166,33 @@ export default function NewDeathCase() {
     );
   };
 
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-card border-b">
-        <div className="container max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate("/compliance/death-cases")}>
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <div>
-                <h1 className="text-xl font-bold">Create Death Case</h1>
-                <p className="text-sm text-muted-foreground">
-                  Case #{caseNumber} • {workflowStatus}
-                </p>
-              </div>
-            </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={saveDraft}
-              disabled={isSavingDraft || !selectedAnimalData}
-            >
-              {isSavingDraft ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Draft"}
-            </Button>
-          </div>
-        </div>
-      </header>
+  useBreadcrumbs([
+    { label: "Dashboard", to: "/dashboard" },
+    { label: "Death Cases", to: "/compliance/death-cases" },
+    { label: "New Case" },
+  ]);
 
-      <main className="container max-w-4xl mx-auto px-4 py-8 space-y-6">
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Page heading + save draft */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold">Create Death Case</h1>
+          <p className="text-sm text-muted-foreground">
+            Case #{caseNumber} • {workflowStatus}
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={saveDraft}
+          disabled={isSavingDraft || !selectedAnimalData}
+        >
+          {isSavingDraft ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Draft"}
+        </Button>
+      </div>
+
+      <div className="space-y-6">
         {/* Role indicator */}
         {renderRoleInstructions()}
 
@@ -2034,7 +2032,7 @@ export default function NewDeathCase() {
             )}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

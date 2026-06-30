@@ -14,6 +14,7 @@ import {
   AssignPersonDialog,
 } from "@/components/animal-detail";
 import { LineageSection } from "@/components/LineageSection";
+import { useBreadcrumbs } from "@/components/layout/breadcrumb-context";
 import { fetchUser } from "@/utils/fetchUser";
 import { UserRole } from "@/enums/user-role.enum";
 import { unassignAnimalUser } from "@/api/unassignAnimalUser";
@@ -100,6 +101,16 @@ const AnimalDetail = () => {
 
   const historyEvents = historyData?.data ?? [];
 
+  useBreadcrumbs([
+    { label: "Dashboard", to: "/dashboard" },
+    { label: "Animals", to: `/farms/${farmId}/animals` },
+    {
+      label: animal
+        ? `${animal.name} · #${animal.tagNumber}`
+        : "Animal",
+    },
+  ]);
+
   // ── Handlers ─────────────────────────────────────────────────────────────
   const openAssignModal = (role: "caretaker" | "veterinarian") => {
     setAssignRole(role);
@@ -182,12 +193,12 @@ const AnimalDetail = () => {
   const isConfirmOpen = unassignRole !== null;
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
+    <div className="space-y-6">
+      {/* Animal header */}
       <AnimalHeader animal={animal} farmId={farmId!} />
 
       {/* Action bar — Log Update (always) + Record Sale (Active animals only) */}
-      <div className="container mx-auto px-4 pt-4 flex justify-end gap-2">
+      <div className="flex justify-end gap-2">
         <Button
           size="sm"
           className="gap-2"
@@ -210,7 +221,7 @@ const AnimalDetail = () => {
         )}
       </div>
 
-      <main className="container mx-auto px-4 py-8 space-y-8">
+      <main className="space-y-8">
         {/* Row 1: Profile + People */}
         <div className="grid gap-6 lg:grid-cols-5">
           <AnimalProfileCard animal={animal} />

@@ -35,6 +35,8 @@ import {
 } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorMessage } from "@/components/ErrorMessage";
+import { AnimalAvatar } from "@/components/AnimalAvatar";
+import { useBreadcrumbs } from "@/components/layout/breadcrumb-context";
 import { fetchUser } from "@/utils/fetchUser";
 import { AnimalType } from "@/enums/animal-type.enum";
 import { cn } from "@/lib/utils";
@@ -117,16 +119,24 @@ const AnimalCard = ({ animal, farmId, isOwner }: AnimalCardProps) => {
     >
       <CardHeader className="pb-2 pt-4 px-4">
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <CardTitle className="text-base font-semibold leading-tight truncate group-hover:text-primary transition-colors">
-              {animal.name}
-            </CardTitle>
-            <CardDescription className="text-xs mt-0.5 font-mono">
-              #{animal.tagNumber}
-              <span className="font-sans mx-1">·</span>
-              {animal.animalType}
-              {animal.breed && ` · ${animal.breed}`}
-            </CardDescription>
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <AnimalAvatar
+              photoUrl={animal.photoUrl}
+              name={animal.name}
+              animalType={animal.animalType}
+              className="h-11 w-11"
+            />
+            <div className="min-w-0 flex-1">
+              <CardTitle className="text-base font-semibold leading-tight truncate group-hover:text-primary transition-colors">
+                {animal.name}
+              </CardTitle>
+              <CardDescription className="text-xs mt-0.5 font-mono">
+                #{animal.tagNumber}
+                <span className="font-sans mx-1">·</span>
+                {animal.animalType}
+                {animal.breed && ` · ${animal.breed}`}
+              </CardDescription>
+            </div>
           </div>
           <Badge
             variant="outline"
@@ -294,47 +304,38 @@ const AnimalsByCategory = () => {
       ? animalType.charAt(0).toUpperCase() + animalType.slice(1)
       : "All Animals";
 
+  useBreadcrumbs([
+    { label: "Dashboard", to: "/dashboard" },
+    { label: "Animals", to: `/farms/${farmId}/animals` },
+    { label: `${displayType}s` },
+  ]);
+
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border/60 bg-card/80 backdrop-blur-sm sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate(`/farms/${farmId}/animals`)}
-                className="hover:bg-muted/60 shrink-0"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div>
-                <h1 className="text-xl font-bold text-foreground">
-                  {displayType}s
-                </h1>
-                {totalItems > 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    {totalItems} animal{totalItems !== 1 ? "s" : ""}
-                  </p>
-                )}
-              </div>
-            </div>
-            <Button
-              size="sm"
-              onClick={() => navigate("/addAnimal")}
-              className="gap-1.5"
-            >
-              <Plus className="h-4 w-4" />
-              Add Animal
-            </Button>
-          </div>
+    <div className="space-y-6">
+      {/* Page heading + add */}
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold text-foreground">
+            {displayType}s
+          </h1>
+          {totalItems > 0 && (
+            <p className="text-xs text-muted-foreground">
+              {totalItems} animal{totalItems !== 1 ? "s" : ""}
+            </p>
+          )}
         </div>
-      </header>
+        <Button
+          size="sm"
+          onClick={() => navigate("/addAnimal")}
+          className="gap-1.5"
+        >
+          <Plus className="h-4 w-4" />
+          Add Animal
+        </Button>
+      </div>
 
-      <main className="container mx-auto px-4 py-6 space-y-6">
         {/* ── Filter bar ── */}
         <Card className="border-border/50 shadow-sm">
           <CardContent className="p-4">
@@ -534,7 +535,6 @@ const AnimalsByCategory = () => {
             )}
           </>
         )}
-      </main>
     </div>
   );
 };

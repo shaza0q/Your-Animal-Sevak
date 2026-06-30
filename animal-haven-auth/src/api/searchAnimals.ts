@@ -1,46 +1,41 @@
-import axios from "axios";
-import { API_BASE_URL } from "../../cache";
+import { api } from "@/lib/api";
+
+export interface AnimalSearchResult {
+  id: string;
+  tagNumber: string;
+  name: string;
+  animalType: string;
+  breed: string;
+  gender: string;
+  farmId: string;
+  status: string;
+  dateOfBirth: string | null;
+  weight: number | null;
+  photoUrl?: string | null;
+  farm?: { name: string };
+}
 
 export const searchAnimals = async (
   query: string,
   filters?: {
+    farmId?: string;
     animalType?: string;
     breed?: string;
     gender?: string;
     excludeAnimalIds?: string[];
   }
-) => {
-  try {
-    const params = new URLSearchParams();
-    params.append("q", query);
-    
-    if (filters?.animalType) {
-      params.append("animalType", filters.animalType);
-    }
-    
-    if (filters?.breed) {
-      params.append("breed", filters.breed);
-    }
-    
-    if (filters?.gender) {
-      params.append("gender", filters.gender);
-    }
-    
-    if (filters?.excludeAnimalIds && filters.excludeAnimalIds.length > 0) {
-      params.append("excludeAnimalIds", filters.excludeAnimalIds.join(","));
-    }
+): Promise<AnimalSearchResult[]> => {
+  const params = new URLSearchParams();
+  params.append("q", query);
 
-    console.log('------search query', query);
-    console.log('------search filters', filters);
-      
-    const res = await axios.get(
-      `${API_BASE_URL}/animal/search?${params.toString()}`,
-      { withCredentials: true }
-    );
-      
-    return res.data.data;
-  } catch (error) {
-    console.log('Error searching animals:', error);
-    throw error;
+  if (filters?.farmId) params.append("farmId", filters.farmId);
+  if (filters?.animalType) params.append("animalType", filters.animalType);
+  if (filters?.breed) params.append("breed", filters.breed);
+  if (filters?.gender) params.append("gender", filters.gender);
+  if (filters?.excludeAnimalIds?.length) {
+    params.append("excludeAnimalIds", filters.excludeAnimalIds.join(","));
   }
+
+  const res = await api.get(`/animal/search?${params.toString()}`);
+  return res.data.data;
 };

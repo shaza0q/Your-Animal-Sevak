@@ -13,6 +13,7 @@ export interface DashboardAnimalAlert {
   animalType: string;
   farmId: string;
   farmName: string;
+  photoUrl?: string | null;
   latestStatus: string;
   riskLevel: string;
 }

@@ -35,6 +35,7 @@ export interface DashboardStats {
     animalType: string;
     farmId: string;
     farmName: string;
+    photoUrl: string | null;
     latestStatus: string;
     riskLevel: string;
   }>;
@@ -149,6 +150,7 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
         animalType: animal.animalType,
         farmId: animal.farmId,
         farmName: animal.farm.name,
+        photoUrl: animal.photoUrl,
         latestStatus: status,
         riskLevel: risk,
       });
@@ -161,6 +163,7 @@ export async function getDashboardStats(userId: string): Promise<DashboardStats>
         animalType: animal.animalType,
         farmId: animal.farmId,
         farmName: animal.farm.name,
+        photoUrl: animal.photoUrl,
         latestStatus: status,
         riskLevel: risk,
       });

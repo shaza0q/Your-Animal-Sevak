@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Users } from "lucide-react";
-import { getUserData } from "@/api/getUserData";
+import { Users } from "lucide-react";
 import { getAllFarmData } from "@/api/getAllFarmData";
 import FarmStaffSection from "@/components/FarmStaffSection";
 import { EmptyState } from "@/components/EmptyState";
@@ -22,12 +21,6 @@ const Directory = () => {
   useEffect(() => {
     const init = async () => {
       try {
-        await getUserData();
-      } catch {
-        navigate("/signin", { replace: true });
-        return;
-      }
-      try {
         const data = await getAllFarmData();
         setFarms(data ?? []);
       } catch {
@@ -37,32 +30,24 @@ const Directory = () => {
       }
     };
     init();
-  }, [navigate]);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Personnel Directory</h1>
-            <p className="text-sm text-muted-foreground">
-              Staff, caretakers, and veterinarians across your farms
-            </p>
-          </div>
-        </div>
-      </header>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold">Personnel Directory</h1>
+        <p className="text-sm text-muted-foreground">
+          Staff, caretakers, and veterinarians across your farms
+        </p>
+      </div>
 
-      <main className="container mx-auto px-4 py-8 space-y-8">
-        {loading && (
-          <div className="space-y-6">
-            {[1, 2].map((i) => (
-              <Skeleton key={i} className="h-48 w-full rounded-xl" />
-            ))}
-          </div>
-        )}
+      {loading && (
+        <div className="space-y-6">
+          {[1, 2].map((i) => (
+            <Skeleton key={i} className="h-48 w-full rounded-xl" />
+          ))}
+        </div>
+      )}
 
         {!loading && farms?.length === 0 && (
           <EmptyState
@@ -95,7 +80,6 @@ const Directory = () => {
               <FarmStaffSection farmId={farm.id} isOwner={true} />
             </div>
           ))}
-      </main>
     </div>
   );
 };

@@ -8,6 +8,7 @@ export interface AnimalListItem {
   breed: string;
   gender: string;
   status: "Active" | "Sold" | "Deceased";
+  photoUrl?: string | null;
   dateOfBirth: string | null;
   weight: number | null;
   isAssigned: boolean;

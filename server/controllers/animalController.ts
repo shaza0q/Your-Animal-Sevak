@@ -5,6 +5,8 @@ import prisma from '../lib/prisma';
 import { parsePage } from '../lib/pagination';
 import { upload } from '../middlewares/upload.middleware';
 import { getAnimalOverviewByFarm, getDashboardStats } from '../services/animalOverview.service';
+import { getFarmTasks } from '../services/tasks.service';
+import { getRecentActivity } from '../services/activity.service';
 import {
   getAnimalsByType,
   getAnimalDetail,
@@ -324,21 +326,34 @@ export const searchAnimalController = async (req: Request, res: Response): Promi
     const { q, animalType, breed, gender, excludeAnimalIds, farmId: queryFarmId } = req.query as Record<string, string>;
     const userId = req.user!.id;
 
-    let farmId = queryFarmId;
-    if (!farmId) {
-      const farmUser = await prisma.farmUser.findFirst({
+    // Resolve the farms this user may search. When a specific farmId is supplied
+    // (e.g. an in-farm picker), scope to it after verifying access; otherwise
+    // search across every farm the user actively belongs to (global search).
+    let farmIds: string[];
+    if (queryFarmId) {
+      const membership = await prisma.farmUser.findFirst({
+        where: { userId, farmId: queryFarmId, isActive: true },
+        select: { farmId: true },
+      });
+      if (!membership) {
+        res.status(403).json({ message: 'User not associated with this farm' });
+        return;
+      }
+      farmIds = [queryFarmId];
+    } else {
+      const farmUsers = await prisma.farmUser.findMany({
         where: { userId, isActive: true },
         select: { farmId: true },
       });
-      if (!farmUser) {
+      if (farmUsers.length === 0) {
         res.status(403).json({ message: 'User not associated with any farm' });
         return;
       }
-      farmId = farmUser.farmId;
+      farmIds = farmUsers.map((fu) => fu.farmId);
     }
 
     const animals = await searchAnimal({
-      farmId,
+      farmIds,
       q: q || '',
       animalType,
       breed,
@@ -371,6 +386,29 @@ export const getDashboardStatsController = async (req: Request, res: Response): 
   }
 };
 
+export const getFarmTasksController = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const tasks = await getFarmTasks(userId);
+    res.json({ success: true, data: tasks });
+  } catch (error) {
+    console.error('Farm tasks error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch tasks' });
+  }
+};
+
+export const getRecentActivityController = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const limit = Math.min(Number(req.query.limit) || 12, 30);
+    const activity = await getRecentActivity(userId, limit);
+    res.json({ success: true, data: activity });
+  } catch (error) {
+    console.error('Recent activity error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch activity' });
+  }
+};
+
 export const sellAnimalController = async (req: Request, res: Response): Promise<void> => {
   try {
     const { animalId } = req.params;
@@ -391,6 +429,43 @@ export const sellAnimalController = async (req: Request, res: Response): Promise
       message.includes('already') || message.includes('cannot') || message.includes('Only') ? 400 :
       500;
     res.status(status).json({ success: false, message });
+  }
+};
+
+export const uploadAnimalPhotoController = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { animalId } = req.params;
+
+    if (!req.file) {
+      res.status(400).json({ success: false, message: 'No photo file provided' });
+      return;
+    }
+
+    const animal = await prisma.animal.findFirst({ where: { id: animalId, isDeleted: false } });
+    if (!animal) {
+      fs.unlinkSync(req.file.path);
+      res.status(404).json({ success: false, message: 'Animal not found' });
+      return;
+    }
+
+    const result = await cloudinary.v2.uploader.upload(req.file.path, {
+      folder: 'animalProfiles',
+    });
+    fs.unlinkSync(req.file.path);
+
+    const updated = await prisma.animal.update({
+      where: { id: animalId },
+      data: { photoUrl: result.secure_url },
+      select: { id: true, photoUrl: true },
+    });
+
+    res.json({ success: true, message: 'Photo updated', data: updated });
+  } catch (err) {
+    console.error('Animal photo upload error:', err);
+    if (req.file) {
+      try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
+    }
+    res.status(500).json({ success: false, message: 'Failed to upload photo' });
   }
 };
 

@@ -158,29 +158,7 @@ const AddAnimal = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/dashboard")}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Add New Animal</h1>
-              <p className="text-sm text-muted-foreground">
-                Enter the essential details. You'll be able to add health records, vaccinations, and updates next.
-              </p>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto">
           <h1 className="text-3xl font-bold mb-2">Add New Animal</h1>
           <p className="text-muted-foreground mb-6">
             Enter the animal’s details below.
@@ -417,8 +395,6 @@ const AddAnimal = () => {
             </div>
           </form>
           )}
-        </div>
-      </main>
     </div>
   );
 };
